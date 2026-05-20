@@ -1,0 +1,13 @@
+{
+  "images" : [
+    {
+      "filename" : "Desert & Dunes Calm.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

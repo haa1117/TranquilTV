@@ -1,0 +1,196 @@
+{
+  "identifier" : "TranquilTV",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_pack_nature",
+      "localizations" : [
+        {
+          "description" : "Unlock all nature-themed premium scenes",
+          "displayName" : "Nature Scenes Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_pack_nature",
+      "referenceName" : "Nature Scenes Pack",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_pack_sleep",
+      "localizations" : [
+        {
+          "description" : "Unlock all sleep-themed premium scenes",
+          "displayName" : "Sleep Sounds Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_pack_sleep",
+      "referenceName" : "Sleep Sounds Pack",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_pack_focus",
+      "localizations" : [
+        {
+          "description" : "Unlock all focus-themed premium scenes",
+          "displayName" : "Focus Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_pack_focus",
+      "referenceName" : "Focus Pack",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_scene_tropical_dusk",
+      "localizations" : [
+        {
+          "description" : "Unlock the Tropical Dusk scene",
+          "displayName" : "Tropical Dusk",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_scene_tropical_dusk",
+      "referenceName" : "Tropical Dusk Scene",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_scene_desert_calm",
+      "localizations" : [
+        {
+          "description" : "Unlock the Desert & Dunes Calm scene",
+          "displayName" : "Desert Calm",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_scene_desert_calm",
+      "referenceName" : "Desert Calm Scene",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_scene_nordic_cabins",
+      "localizations" : [
+        {
+          "description" : "Unlock the Nordic Cabins scene",
+          "displayName" : "Nordic Cabins",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_scene_nordic_cabins",
+      "referenceName" : "Nordic Cabins Scene",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_audio_thunderstorm",
+      "localizations" : [
+        {
+          "description" : "Unlock the Thunderstorm audio experience",
+          "displayName" : "Thunderstorm Audio",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_audio_thunderstorm",
+      "referenceName" : "Thunderstorm Audio",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "tranquil_audio_windchimes",
+      "localizations" : [
+        {
+          "description" : "Unlock the Wind Chimes audio experience",
+          "displayName" : "Wind Chimes Audio",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tranquil_audio_windchimes",
+      "referenceName" : "Wind Chimes Audio",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "co.futurewatch.TranquilTV",
+    "_developerTeamID" : "",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verify Receipt"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "tranquil_premium_group",
+      "localizations" : [
+        {
+          "displayName" : "Tranquil Premium",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Tranquil Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "3.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "tranquil_premium_monthly",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Access all premium scenes and audio with a monthly subscription",
+              "displayName" : "Tranquil Premium Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "tranquil_premium_monthly",
+          "referenceName" : "Tranquil Premium Monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "formatVersion" : "2.0",
+    "storeKitVersion" : "2"
+  }
+}

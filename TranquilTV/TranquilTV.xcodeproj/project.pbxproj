@@ -1,0 +1,513 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001 /* TranquilTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* TranquilTVApp.swift */; };
+		AA000002 /* SplashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* SplashScreen.swift */; };
+		AA000003 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* HomeScreen.swift */; };
+		AA000004 /* PlaybackScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004 /* PlaybackScreen.swift */; };
+		AA000005 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005 /* SettingsScreen.swift */; };
+		AA000006 /* PaywallScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006 /* PaywallScreen.swift */; };
+		AA000010 /* Scene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010 /* Scene.swift */; };
+		AA000011 /* AudioOnlyItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011 /* AudioOnlyItem.swift */; };
+		AA000012 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012 /* AppTheme.swift */; };
+		AA000020 /* SceneService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000020 /* SceneService.swift */; };
+		AA000021 /* AudioOnlyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000021 /* AudioOnlyService.swift */; };
+		AA000022 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022 /* SettingsService.swift */; };
+		AA000023 /* PexelsVideoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000023 /* PexelsVideoService.swift */; };
+		AA000024 /* VideoPlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000024 /* VideoPlaylistService.swift */; };
+		AA000025 /* StoreKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000025 /* StoreKitService.swift */; };
+		AA000026 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000026 /* AnalyticsService.swift */; };
+		AA000030 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030 /* HomeViewModel.swift */; };
+		AA000031 /* PlaybackViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031 /* PlaybackViewModel.swift */; };
+		AA000040 /* TranquilTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000040 /* TranquilTheme.swift */; };
+		AA000041 /* SceneCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000041 /* SceneCardView.swift */; };
+		AA000042 /* FocusableButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000042 /* FocusableButton.swift */; };
+		AA000043 /* AppHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000043 /* AppHeaderView.swift */; };
+		AA000050 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000050 /* Color+Hex.swift */; };
+		AA000060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000060 /* Assets.xcassets */; };
+		AA000061 /* videourls.txt in Resources */ = {isa = PBXBuildFile; fileRef = AB000061 /* videourls.txt */; };
+		AA000070 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000070 /* StoreKit.framework */; };
+		AA000071 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000071 /* AVKit.framework */; };
+		AA000072 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000072 /* AVFoundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AB000001 /* TranquilTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranquilTVApp.swift; sourceTree = "<group>"; };
+		AB000002 /* SplashScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreen.swift; sourceTree = "<group>"; };
+		AB000003 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		AB000004 /* PlaybackScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackScreen.swift; sourceTree = "<group>"; };
+		AB000005 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		AB000006 /* PaywallScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallScreen.swift; sourceTree = "<group>"; };
+		AB000010 /* Scene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scene.swift; sourceTree = "<group>"; };
+		AB000011 /* AudioOnlyItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioOnlyItem.swift; sourceTree = "<group>"; };
+		AB000012 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		AB000020 /* SceneService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneService.swift; sourceTree = "<group>"; };
+		AB000021 /* AudioOnlyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioOnlyService.swift; sourceTree = "<group>"; };
+		AB000022 /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
+		AB000023 /* PexelsVideoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PexelsVideoService.swift; sourceTree = "<group>"; };
+		AB000024 /* VideoPlaylistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlaylistService.swift; sourceTree = "<group>"; };
+		AB000025 /* StoreKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitService.swift; sourceTree = "<group>"; };
+		AB000026 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		AB000030 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		AB000031 /* PlaybackViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackViewModel.swift; sourceTree = "<group>"; };
+		AB000040 /* TranquilTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranquilTheme.swift; sourceTree = "<group>"; };
+		AB000041 /* SceneCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCardView.swift; sourceTree = "<group>"; };
+		AB000042 /* FocusableButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusableButton.swift; sourceTree = "<group>"; };
+		AB000043 /* AppHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHeaderView.swift; sourceTree = "<group>"; };
+		AB000050 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		AB000060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AB000061 /* videourls.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = videourls.txt; sourceTree = "<group>"; };
+		AB000070 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		AB000071 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
+		AB000072 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		AAPROD001 /* TranquilTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TranquilTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AABP0001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000070 /* StoreKit.framework in Frameworks */,
+				AA000071 /* AVKit.framework in Frameworks */,
+				AA000072 /* AVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AAGROOT /* / */ = {
+			isa = PBXGroup;
+			children = (
+				AAGAPP /* TranquilTV */,
+				AAGFW /* Frameworks */,
+				AAGPROD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AAGPROD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AAPROD001 /* TranquilTV.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AAGFW /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AB000070 /* StoreKit.framework */,
+				AB000071 /* AVKit.framework */,
+				AB000072 /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AAGAPP /* TranquilTV */ = {
+			isa = PBXGroup;
+			children = (
+				AAGAPPGRP /* App */,
+				AAGSCREENS /* Screens */,
+				AAGMODELS /* Models */,
+				AAGSERVICES /* Services */,
+				AAGVIEWMODELS /* ViewModels */,
+				AAGCOMPONENTS /* Components */,
+				AAGTHEME /* Theme */,
+				AAGEXTENSIONS /* Extensions */,
+				AAGRESOURCES /* Resources */,
+			);
+			path = TranquilTV;
+			sourceTree = "<group>";
+		};
+		AAGAPPGRP /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AB000001 /* TranquilTVApp.swift */,
+				AB000060 /* Assets.xcassets */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AAGSCREENS /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				AB000002 /* SplashScreen.swift */,
+				AB000003 /* HomeScreen.swift */,
+				AB000004 /* PlaybackScreen.swift */,
+				AB000005 /* SettingsScreen.swift */,
+				AB000006 /* PaywallScreen.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		AAGMODELS /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AB000010 /* Scene.swift */,
+				AB000011 /* AudioOnlyItem.swift */,
+				AB000012 /* AppTheme.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AAGSERVICES /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AB000020 /* SceneService.swift */,
+				AB000021 /* AudioOnlyService.swift */,
+				AB000022 /* SettingsService.swift */,
+				AB000023 /* PexelsVideoService.swift */,
+				AB000024 /* VideoPlaylistService.swift */,
+				AB000025 /* StoreKitService.swift */,
+				AB000026 /* AnalyticsService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AAGVIEWMODELS /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				AB000030 /* HomeViewModel.swift */,
+				AB000031 /* PlaybackViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		AAGCOMPONENTS /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AB000041 /* SceneCardView.swift */,
+				AB000042 /* FocusableButton.swift */,
+				AB000043 /* AppHeaderView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		AAGTHEME /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				AB000040 /* TranquilTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		AAGEXTENSIONS /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				AB000050 /* Color+Hex.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		AAGRESOURCES /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AB000061 /* videourls.txt */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AATARGET1 /* TranquilTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AABCL001 /* Build configuration list for PBXNativeTarget "TranquilTV" */;
+			buildPhases = (
+				AABP0000 /* Sources */,
+				AABP0001 /* Frameworks */,
+				AABP0002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TranquilTV;
+			productName = TranquilTV;
+			productReference = AAPROD001 /* TranquilTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAPROJECT1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AATARGET1 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = AABCL000 /* Build configuration list for PBXProject "TranquilTV" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AAGROOT;
+			productRefGroup = AAGPROD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AATARGET1 /* TranquilTV */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AABP0002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000060 /* Assets.xcassets in Resources */,
+				AA000061 /* videourls.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AABP0000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001 /* TranquilTVApp.swift in Sources */,
+				AA000002 /* SplashScreen.swift in Sources */,
+				AA000003 /* HomeScreen.swift in Sources */,
+				AA000004 /* PlaybackScreen.swift in Sources */,
+				AA000005 /* SettingsScreen.swift in Sources */,
+				AA000006 /* PaywallScreen.swift in Sources */,
+				AA000010 /* Scene.swift in Sources */,
+				AA000011 /* AudioOnlyItem.swift in Sources */,
+				AA000012 /* AppTheme.swift in Sources */,
+				AA000020 /* SceneService.swift in Sources */,
+				AA000021 /* AudioOnlyService.swift in Sources */,
+				AA000022 /* SettingsService.swift in Sources */,
+				AA000023 /* PexelsVideoService.swift in Sources */,
+				AA000024 /* VideoPlaylistService.swift in Sources */,
+				AA000025 /* StoreKitService.swift in Sources */,
+				AA000026 /* AnalyticsService.swift in Sources */,
+				AA000030 /* HomeViewModel.swift in Sources */,
+				AA000031 /* PlaybackViewModel.swift in Sources */,
+				AA000040 /* TranquilTheme.swift in Sources */,
+				AA000041 /* SceneCardView.swift in Sources */,
+				AA000042 /* FocusableButton.swift in Sources */,
+				AA000043 /* AppHeaderView.swift in Sources */,
+				AA000050 /* Color+Hex.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AAXCBC000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+		AAXCBC001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = appletvos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AAXCBC010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TranquilTV/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.futurewatch.TranquilTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+		AAXCBC011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TranquilTV/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.futurewatch.TranquilTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AABCL000 /* Build configuration list for PBXProject "TranquilTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAXCBC000 /* Debug */,
+				AAXCBC001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AABCL001 /* Build configuration list for PBXNativeTarget "TranquilTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAXCBC010 /* Debug */,
+				AAXCBC011 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AAPROJECT1 /* Project object */;
+}

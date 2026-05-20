@@ -1,0 +1,13 @@
+{
+  "images" : [
+    {
+      "filename" : "Ocean At Night.jpg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
