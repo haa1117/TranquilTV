@@ -15,6 +15,11 @@ struct AppTheme {
     let accentColor: Color
     let backgroundColor: Color
     let textColor: Color
+    /// Matches Flutter `AppTheme.premiumBadgeColor` — used in paywall "Best Value" badge
+    let premiumBadgeColor: Color
+    /// Matches Flutter `upgradeButtonGradientStart/End` — used in header Upgrade button
+    let upgradeGradientStart: Color
+    let upgradeGradientEnd: Color
 
     var gradient: LinearGradient {
         LinearGradient(colors: gradientColors, startPoint: .top, endPoint: .bottom)
@@ -26,7 +31,10 @@ struct AppTheme {
         gradientColors: [Color(hex: 0x0A1224), Color(hex: 0x060A12), Color(hex: 0x0B1220)],
         accentColor: Color(hex: 0x00BCD4),
         backgroundColor: Color(hex: 0x080D18),
-        textColor: .white
+        textColor: .white,
+        premiumBadgeColor: Color(hex: 0x9C27B0),
+        upgradeGradientStart: Color(hex: 0x4A148C),
+        upgradeGradientEnd: Color(hex: 0x6A1B9A)
     )
 
     static let calmOcean = AppTheme(
@@ -35,7 +43,10 @@ struct AppTheme {
         gradientColors: [Color(hex: 0x0D1B2A), Color(hex: 0x1B263B)],
         accentColor: Color(hex: 0x4A90E2),
         backgroundColor: Color(hex: 0x0D1B2A),
-        textColor: .white
+        textColor: .white,
+        premiumBadgeColor: Color(hex: 0x4A90E2),
+        upgradeGradientStart: Color(hex: 0x2E5C8A),
+        upgradeGradientEnd: Color(hex: 0x4A90E2)
     )
 
     static let forestMist = AppTheme(
@@ -44,7 +55,10 @@ struct AppTheme {
         gradientColors: [Color(hex: 0x1A3A2E), Color(hex: 0x2D4A3E)],
         accentColor: Color(hex: 0x6B9F78),
         backgroundColor: Color(hex: 0x1A3A2E),
-        textColor: .white
+        textColor: .white,
+        premiumBadgeColor: Color(hex: 0x6B9F78),
+        upgradeGradientStart: Color(hex: 0x2D5A3E),
+        upgradeGradientEnd: Color(hex: 0x6B9F78)
     )
 
     static let sunsetGlow = AppTheme(
@@ -53,7 +67,10 @@ struct AppTheme {
         gradientColors: [Color(hex: 0x2D1B3D), Color(hex: 0x4A2C5A)],
         accentColor: Color(hex: 0xE8A87C),
         backgroundColor: Color(hex: 0x2D1B3D),
-        textColor: .white
+        textColor: .white,
+        premiumBadgeColor: Color(hex: 0xE8A87C),
+        upgradeGradientStart: Color(hex: 0x4A2C5A),
+        upgradeGradientEnd: Color(hex: 0xE8A87C)
     )
 
     static let nightSerenity = AppTheme(
@@ -62,7 +79,10 @@ struct AppTheme {
         gradientColors: [Color(hex: 0x0F0C29), Color(hex: 0x1A1A2E)],
         accentColor: Color(hex: 0x9B59B6),
         backgroundColor: Color(hex: 0x0F0C29),
-        textColor: .white
+        textColor: .white,
+        premiumBadgeColor: Color(hex: 0x9B59B6),
+        upgradeGradientStart: Color(hex: 0x6A1B9A),
+        upgradeGradientEnd: Color(hex: 0x9B59B6)
     )
 
     static let allThemes: [AppTheme] = [defaultTheme, calmOcean, forestMist, sunsetGlow, nightSerenity]
