@@ -13,8 +13,11 @@ struct Scene: Identifiable, Hashable, Codable {
 
     var isLocked: Bool { !isFree && !isPurchased && isPremium }
 
-    // Local image asset name mapping from category
-    var localImageAsset: String? {
+    var localImageAsset: String? { CategoryAssets.imageName(for: category) }
+}
+
+enum CategoryAssets {
+    static func imageName(for category: String) -> String? {
         let map: [String: String] = [
             "Travel Without Travel": "Travel without travel",
             "Window Views": "Window Views",
