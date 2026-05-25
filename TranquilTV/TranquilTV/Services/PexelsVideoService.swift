@@ -1,11 +1,10 @@
 import Foundation
 
 // Pexels API service for fetching video URLs by ID
-// TODO: Set your Pexels API key in the constant below
 class PexelsVideoService {
     static let shared = PexelsVideoService()
-    // TODO: Replace with your actual Pexels API key from https://www.pexels.com/api/
-    private let apiKey = "YOUR_PEXELS_API_KEY"
+    // Same key as Android TV (`lib/screens/playback_screen.dart` → `_PexelsApi`)
+    private let apiKey = "TpfL2TVqtz2yFNQy0RN4NlTpwMPbmudJplmr002HOTapoWAkpDIel0FQ"
     private let baseURL = "https://api.pexels.com/videos/videos/"
     private var cache: [Int: [URL]] = [:]
 
@@ -13,10 +12,6 @@ class PexelsVideoService {
 
     func videoURLs(forId id: Int) async throws -> [URL] {
         if let cached = cache[id] { return cached }
-
-        guard apiKey != "YOUR_PEXELS_API_KEY" else {
-            throw PexelsError.noApiKey
-        }
 
         var request = URLRequest(url: URL(string: "\(baseURL)\(id)")!)
         request.setValue(apiKey, forHTTPHeaderField: "Authorization")
