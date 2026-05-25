@@ -1,24 +1,13 @@
 import Foundation
 import StoreKit
 
-// TODO: Replace product IDs below with your actual App Store Connect product IDs
+// StoreKit 2 — product IDs from App Store Connect (`IAPProductCatalog`).
 @MainActor
 class StoreKitService: ObservableObject {
     static let shared = StoreKitService()
 
-    // TODO: Set these product IDs in App Store Connect
-    static let subscriptionProductId = "tranquil_premium_monthly"
-    static let oneTimeProductIds: Set<String> = [
-        "scene_first_snow",
-        "audio_wind_chimes",
-        "distant_thunder",
-        "crackling_campfire",
-        "focus_flow",
-        "grounding_stability",
-        "anxiety_relief",
-        "japanese_forrest",
-        "mountains_calm",
-    ]
+    static let subscriptionProductId = IAPProductCatalog.subscriptionProductId
+    static let oneTimeProductIds = IAPProductCatalog.oneTimeProductIds
 
     @Published var products: [Product] = []
     @Published var isLoading = false
@@ -37,11 +26,15 @@ class StoreKitService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         do {
-            var ids = Self.oneTimeProductIds
-            ids.insert(Self.subscriptionProductId)
-            products = try await Product.products(for: ids)
+            products = try await Product.products(for: IAPProductCatalog.allProductIds)
+            let loadedIds = Set(products.map(\.id))
+            let missing = IAPProductCatalog.allProductIds.subtracting(loadedIds)
+            if !missing.isEmpty {
+                print("[StoreKit] Products not returned by App Store: \(missing.sorted())")
+            }
         } catch {
             purchaseError = error.localizedDescription
+            print("[StoreKit] loadProducts error: \(error)")
         }
     }
 
@@ -75,7 +68,6 @@ class StoreKitService: ObservableObject {
         for await result in Transaction.currentEntitlements {
             guard let transaction = try? checkVerified(result) else { continue }
             SettingsService.shared.setPurchased(transaction.productID)
-            await transaction.finish()
         }
     }
 
@@ -83,7 +75,9 @@ class StoreKitService: ObservableObject {
         Task.detached {
             for await result in Transaction.updates {
                 do {
-                    let transaction = try self.checkVerified(result)
+                    let transaction = try await MainActor.run {
+                        try self.checkVerified(result)
+                    }
                     await self.updatePurchasedProducts()
                     await transaction.finish()
                 } catch {
@@ -93,7 +87,7 @@ class StoreKitService: ObservableObject {
         }
     }
 
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+    private nonisolated func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .unverified: throw StoreError.failedVerification
         case .verified(let value): return value
