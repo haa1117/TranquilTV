@@ -19,27 +19,46 @@ class SettingsService: ObservableObject {
     @Published var autoPlayLastScene: Bool {
         didSet { UserDefaults.standard.set(autoPlayLastScene, forKey: Keys.autoPlayLastScene) }
     }
+    @Published var audioOnlyMode: Bool {
+        didSet { UserDefaults.standard.set(audioOnlyMode, forKey: Keys.audioOnlyMode) }
+    }
+    /// Seconds before playback controls auto-hide (0 = never hide). Matches Android 3s default.
+    @Published var controlsAutoHideSeconds: Int {
+        didSet { UserDefaults.standard.set(controlsAutoHideSeconds, forKey: Keys.controlsAutoHideSeconds) }
+    }
     @Published var favoriteSceneIds: Set<String> {
         didSet {
-            let arr = Array(favoriteSceneIds)
-            UserDefaults.standard.set(arr, forKey: Keys.favoriteSceneIds)
+            UserDefaults.standard.set(Array(favoriteSceneIds), forKey: Keys.favoriteSceneIds)
         }
     }
     @Published var favoriteAudioIds: Set<String> {
         didSet {
-            let arr = Array(favoriteAudioIds)
-            UserDefaults.standard.set(arr, forKey: Keys.favoriteAudioIds)
+            UserDefaults.standard.set(Array(favoriteAudioIds), forKey: Keys.favoriteAudioIds)
         }
     }
     @Published var purchasedProductIds: Set<String> {
         didSet {
-            let arr = Array(purchasedProductIds)
-            UserDefaults.standard.set(arr, forKey: Keys.purchasedProductIds)
+            UserDefaults.standard.set(Array(purchasedProductIds), forKey: Keys.purchasedProductIds)
         }
     }
-    @Published var lastPlayedContentType: ContentType = .scene
-    @Published var lastPlayedSceneId: String?
-    @Published var lastPlayedAudioOnlyId: String?
+    @Published var timeBasedSuggestionsEnabled: Bool {
+        didSet { UserDefaults.standard.set(timeBasedSuggestionsEnabled, forKey: Keys.timeBasedSuggestionsEnabled) }
+    }
+    @Published var scheduledMoodsEnabled: Bool {
+        didSet { UserDefaults.standard.set(scheduledMoodsEnabled, forKey: Keys.scheduledMoodsEnabled) }
+    }
+    @Published var scheduledMoodBlocks: [ScheduledMoodBlockData] {
+        didSet { persistScheduledBlocks() }
+    }
+    @Published var lastPlayedContentType: ContentType {
+        didSet { UserDefaults.standard.set(lastPlayedContentType == .scene ? "scene" : "audioOnly", forKey: Keys.lastPlayedContentType) }
+    }
+    @Published var lastPlayedSceneId: String? {
+        didSet { UserDefaults.standard.set(lastPlayedSceneId, forKey: Keys.lastPlayedSceneId) }
+    }
+    @Published var lastPlayedAudioOnlyId: String? {
+        didSet { UserDefaults.standard.set(lastPlayedAudioOnlyId, forKey: Keys.lastPlayedAudioOnlyId) }
+    }
 
     var currentTheme: AppTheme { AppTheme.theme(for: currentThemeType) }
 
@@ -49,9 +68,27 @@ class SettingsService: ObservableObject {
         static let defaultVolume = "defaultVolume"
         static let defaultSleepTimerMinutes = "defaultSleepTimerMinutes"
         static let autoPlayLastScene = "autoPlayLastScene"
+        static let audioOnlyMode = "audioOnlyMode"
+        static let controlsAutoHideSeconds = "controlsAutoHideSeconds"
         static let favoriteSceneIds = "favoriteSceneIds"
         static let favoriteAudioIds = "favoriteAudioIds"
         static let purchasedProductIds = "purchasedProductIds"
+        static let timeBasedSuggestionsEnabled = "timeBasedSuggestionsEnabled"
+        static let scheduledMoodsEnabled = "scheduledMoodsEnabled"
+        static let scheduledMoodBlocks = "scheduledMoodBlocks"
+        static let lastPlayedContentType = "lastPlayedContentType"
+        static let lastPlayedSceneId = "lastPlayedSceneId"
+        static let lastPlayedAudioOnlyId = "lastPlayedAudioOnlyId"
+        static let packSelectedCategories = "packSelectedCategories"
+    }
+
+    /// packId → selected category ids (Android `PackService.setSelectedCategories`)
+    private var packCategorySelections: [String: [String]] {
+        didSet {
+            if let data = try? JSONEncoder().encode(packCategorySelections) {
+                UserDefaults.standard.set(data, forKey: Keys.packSelectedCategories)
+            }
+        }
     }
 
     private init() {
@@ -62,12 +99,39 @@ class SettingsService: ObservableObject {
         defaultVolume = defaults.object(forKey: Keys.defaultVolume) as? Double ?? 0.8
         defaultSleepTimerMinutes = defaults.object(forKey: Keys.defaultSleepTimerMinutes) as? Int ?? 30
         autoPlayLastScene = defaults.bool(forKey: Keys.autoPlayLastScene)
-        let favScenes = defaults.array(forKey: Keys.favoriteSceneIds) as? [String] ?? []
-        favoriteSceneIds = Set(favScenes)
-        let favAudio = defaults.array(forKey: Keys.favoriteAudioIds) as? [String] ?? []
-        favoriteAudioIds = Set(favAudio)
-        let purchased = defaults.array(forKey: Keys.purchasedProductIds) as? [String] ?? []
-        purchasedProductIds = Set(purchased)
+        audioOnlyMode = defaults.bool(forKey: Keys.audioOnlyMode)
+        controlsAutoHideSeconds = defaults.object(forKey: Keys.controlsAutoHideSeconds) as? Int ?? 3
+        favoriteSceneIds = Set(defaults.array(forKey: Keys.favoriteSceneIds) as? [String] ?? [])
+        favoriteAudioIds = Set(defaults.array(forKey: Keys.favoriteAudioIds) as? [String] ?? [])
+        purchasedProductIds = Set(defaults.array(forKey: Keys.purchasedProductIds) as? [String] ?? [])
+        timeBasedSuggestionsEnabled = defaults.object(forKey: Keys.timeBasedSuggestionsEnabled) as? Bool ?? true
+        scheduledMoodsEnabled = defaults.bool(forKey: Keys.scheduledMoodsEnabled)
+        scheduledMoodBlocks = Self.loadScheduledBlocks(from: defaults)
+        let contentTypeRaw = defaults.string(forKey: Keys.lastPlayedContentType) ?? "scene"
+        lastPlayedContentType = contentTypeRaw == "audioOnly" ? .audioOnly : .scene
+        lastPlayedSceneId = defaults.string(forKey: Keys.lastPlayedSceneId)
+        lastPlayedAudioOnlyId = defaults.string(forKey: Keys.lastPlayedAudioOnlyId)
+        if let data = defaults.data(forKey: Keys.packSelectedCategories),
+           let map = try? JSONDecoder().decode([String: [String]].self, from: data) {
+            packCategorySelections = map
+        } else {
+            packCategorySelections = [:]
+        }
+    }
+
+    private static func loadScheduledBlocks(from defaults: UserDefaults) -> [ScheduledMoodBlockData] {
+        guard let data = defaults.data(forKey: Keys.scheduledMoodBlocks),
+              let blocks = try? JSONDecoder().decode([ScheduledMoodBlockData].self, from: data),
+              !blocks.isEmpty else {
+            return ScheduledMoodsService.defaultBlocks()
+        }
+        return blocks
+    }
+
+    private func persistScheduledBlocks() {
+        if let data = try? JSONEncoder().encode(scheduledMoodBlocks) {
+            UserDefaults.standard.set(data, forKey: Keys.scheduledMoodBlocks)
+        }
     }
 
     func toggleFavoriteScene(_ id: String) {
@@ -96,6 +160,7 @@ class SettingsService: ObservableObject {
         if let pid = oneTimeProductForSceneCategory(scene.category) {
             return purchasedProductIds.contains(pid)
         }
+        if isPackCategoryUnlocked(scene.category) { return true }
         return false
     }
 
@@ -108,31 +173,60 @@ class SettingsService: ObservableObject {
         return false
     }
 
-    func oneTimeProductForSceneCategory(_ category: String) -> String? {
-        switch category {
-        case "First Snow": return "scene_first_snow"
-        case "Focus & Flow": return "focus_flow"
-        case "Grounding & Stability": return "grounding_stability"
-        case "Anxiety Relief": return "anxiety_relief"
-        case "Japanese Forest Paths": return "japanese_forrest"
-        case "Mountain & Highlands Calm": return "mountains_calm"
-        default: return nil
+    func isPackPurchased(_ pack: PackDefinition) -> Bool {
+        if pack.isFree { return true }
+        guard let productId = pack.productId else { return false }
+        return purchasedProductIds.contains(productId)
+    }
+
+    func isPackCategoryUnlocked(_ sceneCategory: String) -> Bool {
+        for pack in PackService.allPacks {
+            if pack.isFree {
+                if pack.categories.contains(where: { $0.sceneCategory == sceneCategory }) {
+                    return true
+                }
+                continue
+            }
+            guard isPackPurchased(pack) else { continue }
+            let selected = selectedCategories(for: pack.id)
+            let ids = selected.isEmpty ? pack.categories.map(\.id) : selected
+            for catId in ids {
+                if pack.categories.first(where: { $0.id == catId })?.sceneCategory == sceneCategory {
+                    return true
+                }
+            }
         }
+        return false
+    }
+
+    func selectedCategories(for packId: String) -> [String] {
+        packCategorySelections[packId] ?? []
+    }
+
+    func setPurchasedPack(_ pack: PackDefinition, categoryIds: [String]? = nil) {
+        guard let productId = pack.productId else { return }
+        purchasedProductIds.insert(productId)
+        let ids = categoryIds ?? pack.categories.map(\.id)
+        packCategorySelections[pack.id] = ids
+    }
+
+    func oneTimeProductForSceneCategory(_ category: String) -> String? {
+        IAPProductCatalog.oneTimeProductForSceneCategory(category)
     }
 
     func oneTimeProductForAudioTitle(_ title: String) -> String? {
-        switch title {
-        case "Wind Chimes": return "audio_wind_chimes"
-        case "Distant Thunder": return "distant_thunder"
-        case "Crackling Campfire": return "crackling_campfire"
-        default: return nil
-        }
+        IAPProductCatalog.oneTimeProductForAudioTitle(title)
     }
 
+    @MainActor
     func setPurchased(_ productId: String) {
         purchasedProductIds.insert(productId)
-        if productId == StoreKitService.subscriptionProductId {
+        if productId == IAPProductCatalog.subscriptionProductId {
             isPremium = true
+            return
+        }
+        if let pack = PackService.allPacks.first(where: { $0.productId == productId }) {
+            setPurchasedPack(pack)
         }
     }
 }
