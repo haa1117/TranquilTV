@@ -3,18 +3,44 @@ import SwiftUI
 struct SceneCardView: View {
     let scene: Scene
     let isLocked: Bool
-    var isFocused: Bool = false
+    var timeSuggestion: String? = nil
+    var prefersDefaultFocus: Bool = false
+    var focusNamespace: Namespace.ID? = nil
     let onSelect: () -> Void
-
-    @Environment(\.isFocused) private var envFocused
-    @ObservedObject private var settings = SettingsService.shared
-
-    private var theme: AppTheme { settings.currentTheme }
 
     var body: some View {
         Button(action: onSelect) {
-            ZStack(alignment: .bottomLeading) {
-                // Thumbnail image
+            SceneCardLabel(scene: scene, isLocked: isLocked, timeSuggestion: timeSuggestion)
+        }
+        .tranquilTVButton()
+        .modifier(DefaultFocusModifier(isPreferred: prefersDefaultFocus, namespace: focusNamespace))
+        .frame(
+            width: TranquilTheme.cardOuterWidth(for: TranquilTheme.sceneCardWidth),
+            height: TranquilTheme.cardOuterHeight(for: TranquilTheme.sceneCardHeight)
+        )
+    }
+}
+
+private struct SceneCardLabel: View {
+    let scene: Scene
+    let isLocked: Bool
+    var timeSuggestion: String? = nil
+
+    @Environment(\.isFocused) private var isFocused
+    @ObservedObject private var settings = SettingsService.shared
+    private var theme: AppTheme { settings.currentTheme }
+    private var isFavorite: Bool { settings.isFavoriteScene(scene.id) }
+
+    private var captionText: String? {
+        var parts: [String] = []
+        if let suggestion = timeSuggestion, !suggestion.isEmpty { parts.append(suggestion) }
+        if !scene.description.isEmpty { parts.append(scene.description) }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    var body: some View {
+        VStack(alignment: .center, spacing: TranquilTheme.cardCaptionSpacing) {
+            ZStack {
                 Group {
                     if let assetName = scene.localImageAsset {
                         Image(assetName)
@@ -25,62 +51,124 @@ struct SceneCardView: View {
                             .fill(Color.gray.opacity(0.3))
                             .overlay(
                                 Image(systemName: "photo")
-                                    .font(.system(size: 48))
+                                    .font(.system(size: 48 * TranquilTheme.homeCardScale))
                                     .foregroundColor(.white.opacity(0.4))
                             )
                     }
                 }
-                .frame(width: TranquilTheme.cardWidth, height: TranquilTheme.cardHeight)
+                .frame(width: TranquilTheme.sceneCardWidth, height: TranquilTheme.sceneCardHeight)
                 .clipped()
 
-                // Gradient overlay
                 LinearGradient(
-                    colors: [.clear, .black.opacity(0.75)],
-                    startPoint: .top,
-                    endPoint: .bottom
+                    colors: [.black.opacity(0.65), .clear],
+                    startPoint: .bottom,
+                    endPoint: .top
                 )
 
-                // Title & lock indicator
-                VStack(alignment: .leading, spacing: 4) {
-                    if isLocked {
-                        HStack(spacing: 4) {
-                            Image(systemName: "lock.fill")
-                                .font(.system(size: 12))
-                                .foregroundColor(theme.accentColor)
-                            Text("Premium")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(theme.accentColor)
+                if isLocked {
+                    Color.black.opacity(0.25)
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 48 * TranquilTheme.homeCardScale))
+                        .foregroundColor(theme.accentColor)
+                }
+
+                if isLocked {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 3) {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 11))
+                                Text("Premium")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
+                            .background(theme.premiumBadgeColor.opacity(0.9))
+                            .clipShape(Capsule())
                         }
+                        Spacer()
                     }
+                    .padding(TranquilTheme.cardBadgeInset)
+                }
+
+                if isFavorite && !isLocked {
+                    VStack {
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(.yellow)
+                                .padding(6)
+                                .background(Circle().fill(Color.black.opacity(0.45)))
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    .padding(TranquilTheme.cardBadgeInset)
+                }
+
+                VStack {
+                    Spacer()
                     Text(scene.name)
                         .font(TranquilTheme.cardTitleFont)
                         .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
                         .lineLimit(1)
+                        .padding(.horizontal, TranquilTheme.cardTitleHorizontalPadding)
+                        .padding(.bottom, TranquilTheme.cardTitleBottomPadding)
                 }
-                .padding(12)
             }
-            .frame(width: TranquilTheme.cardWidth, height: TranquilTheme.cardHeight)
+            .frame(width: TranquilTheme.sceneCardWidth, height: TranquilTheme.sceneCardHeight)
             .clipShape(RoundedRectangle(cornerRadius: TranquilTheme.cardCornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: TranquilTheme.cardCornerRadius)
-                    .stroke(envFocused ? theme.accentColor : Color.clear, lineWidth: TranquilTheme.focusBorderWidth)
-                    .shadow(color: envFocused ? theme.accentColor.opacity(0.6) : .clear, radius: 20)
+            .cardFocusChrome(
+                isFocused: isFocused,
+                cornerRadius: TranquilTheme.cardCornerRadius,
+                accentColor: theme.accentColor
             )
-            .scaleEffect(envFocused ? TranquilTheme.cardScaleFocused : 1.0)
-            .shadow(color: .black.opacity(envFocused ? 0.5 : 0.3), radius: envFocused ? 20 : 8, y: envFocused ? 12 : 4)
-            .animation(.easeInOut(duration: 0.2), value: envFocused)
+
+            if let caption = captionText {
+                Text(caption)
+                    .font(TranquilTheme.cardCaptionFont)
+                    .foregroundColor(.white.opacity(isFocused ? 0.82 : 0.65))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(width: TranquilTheme.sceneCardWidth,
+                           height: TranquilTheme.cardCaptionHeight,
+                           alignment: .top)
+            } else {
+                Color.clear
+                    .frame(width: TranquilTheme.sceneCardWidth, height: TranquilTheme.cardCaptionHeight)
+            }
         }
-        .buttonStyle(.plain)
-        .frame(width: TranquilTheme.cardWidth, height: TranquilTheme.cardHeight)
     }
 }
 
 struct AudioCardView: View {
     let item: AudioOnlyItem
     let isLocked: Bool
+    var prefersDefaultFocus: Bool = false
+    var focusNamespace: Namespace.ID? = nil
     let onSelect: () -> Void
 
-    @Environment(\.isFocused) private var envFocused
+    var body: some View {
+        Button(action: onSelect) {
+            AudioCardLabel(item: item, isLocked: isLocked)
+        }
+        .tranquilTVButton()
+        .modifier(DefaultFocusModifier(isPreferred: prefersDefaultFocus, namespace: focusNamespace))
+        .frame(
+            width: TranquilTheme.cardOuterWidth(for: TranquilTheme.sceneCardWidth),
+            height: TranquilTheme.cardOuterHeight(for: TranquilTheme.audioCardHeight)
+        )
+    }
+}
+
+private struct AudioCardLabel: View {
+    let item: AudioOnlyItem
+    let isLocked: Bool
+
+    @Environment(\.isFocused) private var isFocused
     @ObservedObject private var settings = SettingsService.shared
     private var theme: AppTheme { settings.currentTheme }
 
@@ -96,73 +184,110 @@ struct AudioCardView: View {
     }
 
     var body: some View {
-        Button(action: onSelect) {
-            VStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(theme.accentColor.opacity(0.2))
-                        .frame(width: 120, height: 120)
+        VStack(alignment: .center, spacing: TranquilTheme.cardCaptionSpacing) {
+            ZStack {
+                Group {
                     if let assetName = item.localImageAsset {
                         Image(assetName)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 120, height: 120)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     } else {
-                        Image(systemName: categoryIcon)
-                            .font(.system(size: 48))
-                            .foregroundColor(theme.accentColor)
-                    }
-                    if isLocked {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(.white)
-                            .padding(6)
-                            .background(Color.black.opacity(0.6))
-                            .clipShape(Circle())
-                            .offset(x: 40, y: -40)
+                        Rectangle()
+                            .fill(theme.accentColor.opacity(0.25))
+                            .overlay(
+                                Image(systemName: categoryIcon)
+                                    .font(.system(size: 48 * TranquilTheme.homeCardScale))
+                                    .foregroundColor(theme.accentColor.opacity(0.8))
+                            )
                     }
                 }
+                .frame(width: TranquilTheme.sceneCardWidth, height: TranquilTheme.audioCardHeight)
+                .clipped()
 
-                Text(item.title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 130)
+                LinearGradient(
+                    colors: [.black.opacity(0.65), .clear],
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
 
-                Text(item.category)
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.6))
+                VStack {
+                    HStack {
+                        Text("Audio")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.9))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        Spacer()
+                        if isLocked {
+                            HStack(spacing: 3) {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 11))
+                                Text("Premium")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
+                            .background(theme.premiumBadgeColor.opacity(0.9))
+                            .clipShape(Capsule())
+                        }
+                    }
+                    Spacer()
+                }
+                .padding(TranquilTheme.cardBadgeInset)
+
+                if isLocked {
+                    Color.black.opacity(0.25)
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 48 * TranquilTheme.homeCardScale))
+                        .foregroundColor(theme.accentColor)
+                }
+
+                VStack {
+                    Spacer()
+                    Text(item.title)
+                        .font(TranquilTheme.cardTitleFont)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(1)
+                        .padding(.horizontal, TranquilTheme.cardTitleHorizontalPadding)
+                        .padding(.bottom, TranquilTheme.cardTitleBottomPadding)
+                }
             }
-            .padding(8)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(envFocused ? 0.1 : 0.05))
+            .frame(width: TranquilTheme.sceneCardWidth, height: TranquilTheme.audioCardHeight)
+            .clipShape(RoundedRectangle(cornerRadius: TranquilTheme.cardCornerRadius))
+            .cardFocusChrome(
+                isFocused: isFocused,
+                cornerRadius: TranquilTheme.cardCornerRadius,
+                accentColor: theme.accentColor
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(envFocused ? theme.accentColor : Color.clear, lineWidth: TranquilTheme.focusBorderWidth)
-            )
-            .scaleEffect(envFocused ? TranquilTheme.cardScaleFocused : 1.0)
-            .shadow(color: envFocused ? theme.accentColor.opacity(0.4) : .clear, radius: 16)
-            .animation(.easeInOut(duration: 0.2), value: envFocused)
+
+            Text(item.category)
+                .font(TranquilTheme.cardCaptionFont)
+                .foregroundColor(.white.opacity(isFocused ? 0.82 : 0.65))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .frame(width: TranquilTheme.sceneCardWidth,
+                       height: TranquilTheme.cardCaptionHeight,
+                       alignment: .top)
         }
-        .buttonStyle(.plain)
     }
 }
 
 struct SectionHeaderView: View {
     let title: String
     let icon: String
+    var iconSize: CGFloat = TranquilTheme.sectionIconSize
 
     @ObservedObject private var settings = SettingsService.shared
     private var theme: AppTheme { settings.currentTheme }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: TranquilTheme.sectionTitleToIconSpacing) {
             Image(systemName: icon)
-                .font(.system(size: 24))
+                .font(.system(size: iconSize))
                 .foregroundColor(theme.accentColor)
             Text(title)
                 .font(TranquilTheme.sectionTitleFont)
