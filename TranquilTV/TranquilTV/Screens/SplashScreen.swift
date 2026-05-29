@@ -41,7 +41,7 @@ struct SplashScreen: View {
                 withAnimation(.easeIn(duration: 0.8)) {
                     opacity = 1.0
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     withAnimation(.easeOut(duration: 0.5)) {
                         isActive = true
                     }
