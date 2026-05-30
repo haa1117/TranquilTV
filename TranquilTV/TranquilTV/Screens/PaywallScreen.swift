@@ -1,7 +1,15 @@
+    private var resolvedProductTitle: String? {
+        if let productTitle { return productTitle }
+        guard let productId else { return nil }
+        return IAPProductCatalog.displayName(for: productId)
+    }
 import SwiftUI
 import StoreKit
 
 struct PaywallScreen: View {
+    var productId: String? = nil
+    var productTitle: String? = nil
+
     @ObservedObject private var settings = SettingsService.shared
     @StateObject private var storeKit = StoreKitService.shared
     @Environment(\.dismiss) private var dismiss
@@ -16,8 +24,17 @@ struct PaywallScreen: View {
         storeKit.subscriptionProduct()
     }
 
+    private var oneTimeProduct: Product? {
+        guard let productId else { return nil }
+        return storeKit.product(id: productId)
+    }
+
     private var priceString: String {
         subscriptionProduct?.displayPrice ?? "$4.99"
+    }
+
+    private var oneTimePriceString: String {
+        oneTimeProduct?.displayPrice ?? "$1.99"
     }
 
     var body: some View {
@@ -71,13 +88,14 @@ struct PaywallScreen: View {
                                 .foregroundColor(theme.accentColor)
                         }
 
-                        Text("Unlock Premium")
+                        Text(productTitle != nil ? "Unlock Content" : "Unlock Premium")
                             .font(.system(size: 48, weight: .bold))
                             .foregroundColor(.white)
 
-                        Text("Experience unlimited tranquility")
+                        Text(productTitle ?? "Experience unlimited tranquility")
                             .font(.system(size: 22))
                             .foregroundColor(.white.opacity(0.7))
+                            .multilineTextAlignment(.center)
                     }
 
                     // Feature list
@@ -132,6 +150,38 @@ struct PaywallScreen: View {
                         .tvFocusStyle()
                         .disabled(isPurchasing)
 
+                        if let productId, oneTimeProduct != nil || productTitle != nil {
+                            Button {
+                                Task { await purchaseOneTime(productId: productId) }
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Buy Once")
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(.white)
+                                        Text("\(oneTimePriceString) · Keep forever")
+                                            .font(.system(size: 15))
+                                            .foregroundColor(.white.opacity(0.8))
+                                    }
+                                    Spacer()
+                                    Image(systemName: "bag.fill")
+                                        .font(.system(size: 28))
+                                        .foregroundColor(theme.accentColor)
+                                }
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 18)
+                                .background(Color.white.opacity(0.08))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(theme.accentColor.opacity(0.5), lineWidth: 1.5)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .tvFocusStyle()
+                            .disabled(isPurchasing)
+                        }
+
                         // Restore purchases
                         Button {
                             Task { await restorePurchases() }
@@ -178,6 +228,27 @@ struct PaywallScreen: View {
                 .font(.system(size: 20))
                 .foregroundColor(.white)
             Spacer()
+        }
+    }
+
+    private func purchaseOneTime(productId: String) async {
+        guard let product = storeKit.product(id: productId) else {
+            purchaseError = "Product not available."
+            showError = true
+            return
+        }
+        isPurchasing = true
+        defer { isPurchasing = false }
+        AnalyticsService.logPurchaseAttempt(productId: productId)
+        do {
+            let success = try await storeKit.purchase(product)
+            if success {
+                AnalyticsService.logPurchaseSuccess(productId: productId)
+                dismiss()
+            }
+        } catch {
+            purchaseError = error.localizedDescription
+            showError = true
         }
     }
 
