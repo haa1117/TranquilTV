@@ -2,22 +2,27 @@ import SwiftUI
 import AVKit
 
 struct PlaybackScreen: View {
-    let content: PlaybackContent
+    @State private var activeContent: PlaybackContent
 
     @StateObject private var viewModel = PlaybackViewModel()
     @StateObject private var categoryPlayer = CategoryVideoPlayer()
     @ObservedObject private var settings = SettingsService.shared
     @Environment(\.dismiss) private var dismiss
+    @State private var isSleepTransitionActive = false
+
+    init(content: PlaybackContent) {
+        _activeContent = State(initialValue: content)
+    }
 
     private var theme: AppTheme { settings.currentTheme }
     private var displayTitle: String {
-        switch content {
+        switch activeContent {
         case .scene(let s): return s.name
         case .audioOnly(let a): return a.title
         }
     }
     private var displayDescription: String {
-        switch content {
+        switch activeContent {
         case .scene(let s): return s.description
         case .audioOnly: return ""
         }
@@ -27,8 +32,7 @@ struct PlaybackScreen: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            // Background: video or audio artwork
-            switch content {
+            switch activeContent {
             case .scene:
                 CategoryVideoPlayerView(player: categoryPlayer)
                     .ignoresSafeArea()
@@ -37,21 +41,27 @@ struct PlaybackScreen: View {
                     .ignoresSafeArea()
             }
 
-            // Dark scrim for readability
             Color.black.opacity(0.3).ignoresSafeArea()
 
-            // Sleep transition overlay
-            if viewModel.sleepTimerRemaining == 0 {
+            // Audio-only dim mode (Android `audioOnlyMode` setting)
+            if settings.audioOnlyMode, case .audioOnly = activeContent {
                 Color.black.opacity(0.88).ignoresSafeArea()
             }
 
-            // Controls overlay
+            if isSleepTransitionActive {
+                Color.black.opacity(0.88)
+                    .ignoresSafeArea()
+                    .transition(.opacity.animation(.easeInOut(duration: 1.2)))
+            }
+
             if viewModel.controlsVisible {
                 ControlsOverlayView(
                     title: displayTitle,
                     description: displayDescription,
                     isPlaying: viewModel.isPlaying,
                     isFavorite: viewModel.isFavorite,
+                    isMuted: viewModel.isMuted,
+                    volumePercent: Int(viewModel.volume * 100),
                     isAudioMode: viewModel.isAudioOnlyMode,
                     sleepTimerLabel: viewModel.sleepTimerLabel(),
                     selectedTimerMinutes: viewModel.selectedSleepTimerMinutes,
@@ -61,14 +71,69 @@ struct PlaybackScreen: View {
                     onNext: { navigateNext() },
                     onFavorite: { viewModel.toggleFavorite() },
                     onTimerSelect: { mins in viewModel.startSleepTimer(minutes: mins) },
+                    onCancelTimer: { viewModel.cancelSleepTimer() },
+                    onVolumeDown: { viewModel.setVolume(viewModel.volume - 0.05) },
+                    onVolumeUp: { viewModel.setVolume(viewModel.volume + 0.05) },
+                    onToggleMute: { viewModel.toggleMute() },
                     onInteraction: { viewModel.showControls() }
                 )
-                .transition(.opacity)
+                .transition(.opacity.animation(.easeInOut(duration: 0.3)))
+            }
+
+            // Capture Siri Remote input when controls are hidden (VideoPlayer steals focus otherwise).
+            PlaybackRemoteActivityBridge(
+                isCapturing: !viewModel.controlsVisible,
+                onActivity: { viewModel.showControls() }
+            )
+            .allowsHitTesting(false)
+
+            if categoryPlayer.isDownloading {
+                VStack {
+                    HStack {
+                        Spacer()
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .scaleEffect(0.7)
+                                .tint(.white)
+                            Text("Downloading…")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Color.black.opacity(0.6))
+                        .clipShape(Capsule())
+                        .padding(.top, 40)
+                        .padding(.trailing, 36)
+                    }
+                    Spacer()
+                }
+                .transition(.opacity.animation(.easeInOut(duration: 0.3)))
+            }
+
+            if let error = viewModel.errorMessage {
+                VStack {
+                    Text(error)
+                        .font(.system(size: 15))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.red.opacity(0.75))
+                        .clipShape(Capsule())
+                        .padding(.top, 48)
+                    Spacer()
+                }
             }
         }
         .ignoresSafeArea()
         .onAppear {
-            setupPlayback()
+            setupPlayback(for: activeContent)
+            viewModel.onSleepTimerExpired = {
+                withAnimation(.easeInOut(duration: 1.2)) {
+                    isSleepTransitionActive = true
+                }
+            }
         }
         .onDisappear {
             viewModel.cleanup()
@@ -77,68 +142,82 @@ struct PlaybackScreen: View {
         .onTapGesture {
             viewModel.showControls()
         }
-        // tvOS remote swipe/tap to show controls
         .onMoveCommand { _ in
             viewModel.showControls()
         }
     }
 
-    // MARK: - Setup
-
-    private func setupPlayback() {
+    private func setupPlayback(for content: PlaybackContent) {
+        viewModel.sceneVideoPlayer = categoryPlayer.player
         viewModel.loadContent(content)
         switch content {
         case .scene(let scene):
+            categoryPlayer.startFallbackImmediately()
             let ids = VideoPlaylistService.shared.videoIds(forCategory: scene.category)
             categoryPlayer.start(videoIds: ids, category: scene.category)
+            viewModel.applyDefaultSleepTimerIfNeeded()
         case .audioOnly:
+            viewModel.applyDefaultSleepTimerIfNeeded()
             break
         }
     }
 
-    // MARK: - Navigation
+    private func navigateToScene(_ scene: Scene) {
+        guard settings.canAccessScene(scene) else { return }
+        settings.lastPlayedContentType = .scene
+        settings.lastPlayedSceneId = scene.id
+        activeContent = .scene(scene)
+        categoryPlayer.stop()
+        viewModel.sceneVideoPlayer = categoryPlayer.player
+        viewModel.loadScene(scene)
+        categoryPlayer.startFallbackImmediately()
+        let ids = VideoPlaylistService.shared.videoIds(forCategory: scene.category)
+        categoryPlayer.start(videoIds: ids, category: scene.category)
+    }
+
+    private func navigateToAudio(_ item: AudioOnlyItem) {
+        settings.lastPlayedContentType = .audioOnly
+        settings.lastPlayedAudioOnlyId = item.id
+        activeContent = .audioOnly(item)
+        categoryPlayer.stop()
+        viewModel.loadAudio(item)
+    }
 
     private func navigatePrevious() {
-        switch content {
+        switch activeContent {
         case .scene(let scene):
             let all = SceneService.shared.scenesInHomeOrder()
             if let idx = all.firstIndex(where: { $0.id == scene.id }) {
-                let prevIdx = idx > 0 ? idx - 1 : all.count - 1
-                let prev = all[prevIdx]
-                if settings.canAccessScene(prev) {
-                    categoryPlayer.stop()
-                    let ids = VideoPlaylistService.shared.videoIds(forCategory: prev.category)
-                    categoryPlayer.start(videoIds: ids, category: prev.category)
-                }
+                let prev = all[idx > 0 ? idx - 1 : all.count - 1]
+                navigateToScene(prev)
             }
         case .audioOnly(let item):
             let all = AudioOnlyService.shared.allItems
             if let idx = all.firstIndex(where: { $0.id == item.id }) {
                 let prev = all[idx > 0 ? idx - 1 : all.count - 1]
-                viewModel.loadAudio(prev)
+                if settings.canAccessAudio(prev) {
+                    navigateToAudio(prev)
+                }
             }
         }
         viewModel.showControls()
     }
 
     private func navigateNext() {
-        switch content {
+        switch activeContent {
         case .scene(let scene):
             let all = SceneService.shared.scenesInHomeOrder()
             if let idx = all.firstIndex(where: { $0.id == scene.id }) {
-                let nextIdx = idx < all.count - 1 ? idx + 1 : 0
-                let next = all[nextIdx]
-                if settings.canAccessScene(next) {
-                    categoryPlayer.stop()
-                    let ids = VideoPlaylistService.shared.videoIds(forCategory: next.category)
-                    categoryPlayer.start(videoIds: ids, category: next.category)
-                }
+                let next = all[idx < all.count - 1 ? idx + 1 : 0]
+                navigateToScene(next)
             }
         case .audioOnly(let item):
             let all = AudioOnlyService.shared.allItems
             if let idx = all.firstIndex(where: { $0.id == item.id }) {
                 let next = all[idx < all.count - 1 ? idx + 1 : 0]
-                viewModel.loadAudio(next)
+                if settings.canAccessAudio(next) {
+                    navigateToAudio(next)
+                }
             }
         }
         viewModel.showControls()
@@ -150,10 +229,17 @@ struct PlaybackScreen: View {
 @MainActor
 class CategoryVideoPlayer: ObservableObject {
     @Published var player: AVQueuePlayer = AVQueuePlayer()
+    @Published var isDownloading = false
     private var looper: AVPlayerLooper?
     private var videoIds: [Int] = []
     private var category: String = ""
     private var currentIndex = 0
+    private var endObserver: NSObjectProtocol?
+
+    func startFallbackImmediately() {
+        guard looper == nil, player.items().isEmpty else { return }
+        startFallback()
+    }
 
     func start(videoIds: [Int], category: String) {
         guard !videoIds.isEmpty else {
@@ -169,25 +255,45 @@ class CategoryVideoPlayer: ObservableObject {
     private func loadCurrentVideo() {
         guard currentIndex < videoIds.count else { return }
         let id = videoIds[currentIndex]
+        isDownloading = true
         Task {
             do {
                 let urls = try await PexelsVideoService.shared.videoURLs(forId: id)
                 if let url = urls.first {
                     await MainActor.run {
+                        self.isDownloading = false
+                        self.looper = nil
                         let item = AVPlayerItem(url: url)
                         self.player.removeAllItems()
                         self.player.insert(item, after: nil)
                         self.player.volume = 0.0
                         self.player.play()
-                        // Preload next
+                        self.installEndObserver(for: item)
                         self.prefetchNext()
                     }
                 } else {
+                    await MainActor.run { self.isDownloading = false }
                     startFallback()
                 }
             } catch {
+                await MainActor.run { self.isDownloading = false }
                 startFallback()
             }
+        }
+    }
+
+    private func installEndObserver(for item: AVPlayerItem) {
+        if let endObserver {
+            NotificationCenter.default.removeObserver(endObserver)
+        }
+        endObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: item,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.currentIndex = (self.currentIndex + 1) % max(self.videoIds.count, 1)
+            self.loadCurrentVideo()
         }
     }
 
@@ -208,13 +314,19 @@ class CategoryVideoPlayer: ObservableObject {
 
     func startFallback() {
         guard let url = Bundle.main.url(forResource: "fallback_pexels_3571264", withExtension: "mp4") else { return }
+        looper = nil
+        player.removeAllItems()
         let item = AVPlayerItem(url: url)
-        looper = AVPlayerLooper(player: player as! AVQueuePlayer, templateItem: item)
+        looper = AVPlayerLooper(player: player, templateItem: item)
         player.volume = 0
         player.play()
     }
 
     func stop() {
+        if let endObserver {
+            NotificationCenter.default.removeObserver(endObserver)
+            self.endObserver = nil
+        }
         player.pause()
         player.removeAllItems()
         looper = nil
@@ -226,7 +338,8 @@ struct CategoryVideoPlayerView: View {
 
     var body: some View {
         VideoPlayer(player: player.player)
-            .disabled(true) // tvOS remote should not control the player directly
+            .disabled(true)
+            .focusable(false)
     }
 }
 
@@ -256,6 +369,8 @@ struct ControlsOverlayView: View {
     let description: String
     let isPlaying: Bool
     let isFavorite: Bool
+    let isMuted: Bool
+    let volumePercent: Int
     let isAudioMode: Bool
     let sleepTimerLabel: String?
     let selectedTimerMinutes: Int?
@@ -265,6 +380,10 @@ struct ControlsOverlayView: View {
     let onNext: () -> Void
     let onFavorite: () -> Void
     let onTimerSelect: (Int) -> Void
+    let onCancelTimer: () -> Void
+    let onVolumeDown: () -> Void
+    let onVolumeUp: () -> Void
+    let onToggleMute: () -> Void
     let onInteraction: () -> Void
 
     @ObservedObject private var settings = SettingsService.shared
@@ -272,7 +391,6 @@ struct ControlsOverlayView: View {
 
     var body: some View {
         ZStack {
-            // Gradient scrim at top and bottom
             VStack {
                 LinearGradient(
                     colors: [.black.opacity(0.7), .clear],
@@ -288,7 +406,6 @@ struct ControlsOverlayView: View {
             }
             .ignoresSafeArea()
 
-            // Top-left: back + title
             VStack {
                 HStack(alignment: .top) {
                     HStack(spacing: 16) {
@@ -311,7 +428,6 @@ struct ControlsOverlayView: View {
                         }
                     }
                     Spacer()
-                    // Sleep timer display
                     if let label = sleepTimerLabel {
                         HStack(spacing: 6) {
                             Image(systemName: "clock")
@@ -331,11 +447,9 @@ struct ControlsOverlayView: View {
                 Spacer()
             }
 
-            // Bottom: playback controls
             VStack {
                 Spacer()
                 HStack(alignment: .center) {
-                    // Left group: prev / play / next
                     HStack(spacing: 20) {
                         FocusableCircleButton(icon: "chevron.left", size: 56) {
                             onPrevious()
@@ -357,10 +471,36 @@ struct ControlsOverlayView: View {
 
                     Spacer()
 
-                    // Right group: sleep timer + favorite
+                    HStack(spacing: 12) {
+                        FocusableCircleButton(icon: isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill", size: 48) {
+                            onToggleMute()
+                            onInteraction()
+                        }
+                        FocusableCircleButton(icon: "minus", size: 44) {
+                            onVolumeDown()
+                            onInteraction()
+                        }
+                        Text("\(volumePercent)%")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
+                            .frame(width: 44)
+                        FocusableCircleButton(icon: "plus", size: 44) {
+                            onVolumeUp()
+                            onInteraction()
+                        }
+                    }
+
+                    Spacer()
+
                     HStack(spacing: 16) {
-                        ForEach([15, 30, 60, 90], id: \.self) { mins in
+                        ForEach([15, 30, 45, 60, 90, 120], id: \.self) { mins in
                             timerButton(minutes: mins)
+                        }
+                        if sleepTimerLabel != nil {
+                            FocusableCircleButton(icon: "xmark", size: 44) {
+                                onCancelTimer()
+                                onInteraction()
+                            }
                         }
                         FocusableCircleButton(
                             icon: isFavorite ? "heart.fill" : "heart",
@@ -380,10 +520,10 @@ struct ControlsOverlayView: View {
     @ViewBuilder
     private func timerButton(minutes: Int) -> some View {
         let isSelected = selectedTimerMinutes == minutes
-        Button {
+        TranquilFocusButton(action: {
             onTimerSelect(minutes)
             onInteraction()
-        } label: {
+        }) {
             Text("\(minutes)m")
                 .font(.system(size: 15, weight: isSelected ? .bold : .regular))
                 .foregroundColor(isSelected ? theme.accentColor : .white.opacity(0.7))
