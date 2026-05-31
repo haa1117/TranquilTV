@@ -108,12 +108,11 @@ struct SettingsCardView: View {
     let subtitle: String
     let onTap: () -> Void
 
-    @Environment(\.isFocused) private var isFocused
     @ObservedObject private var settings = SettingsService.shared
     private var theme: AppTheme { settings.currentTheme }
 
     var body: some View {
-        Button(action: onTap) {
+        TranquilFocusButton(action: onTap) { isFocused in
             HStack(spacing: 20) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
@@ -186,9 +185,9 @@ struct ThemeSettingsPage: View {
     @ViewBuilder
     private func themeRow(_ t: AppTheme) -> some View {
         let isSelected = settings.currentThemeType == t.type
-        Button {
+        TranquilFocusButton(action: {
             settings.currentThemeType = t.type
-        } label: {
+        }) { isFocused in
             HStack(spacing: 20) {
                 // Color swatch
                 HStack(spacing: 4) {
@@ -261,18 +260,29 @@ struct AudioSettingsPage: View {
                         Text("Default Volume")
                             .font(.system(size: 22, weight: .semibold))
                             .foregroundColor(.white)
-                        HStack {
-                            Image(systemName: "speaker.fill").foregroundColor(theme.accentColor)
-                            Slider(value: $settings.defaultVolume, in: 0...1)
-                                .tint(theme.accentColor)
-                            Image(systemName: "speaker.wave.3.fill").foregroundColor(theme.accentColor)
+                        HStack(spacing: 24) {
+                            FocusableCircleButton(icon: "minus", size: 48) {
+                                settings.defaultVolume = max(0, settings.defaultVolume - 0.05)
+                            }
+                            Text("\(Int(settings.defaultVolume * 100))%")
+                                .font(.system(size: 28, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(minWidth: 80)
+                            FocusableCircleButton(icon: "plus", size: 48) {
+                                settings.defaultVolume = min(1, settings.defaultVolume + 0.05)
+                            }
                         }
-                        Text("\(Int(settings.defaultVolume * 100))%")
-                            .font(.system(size: 18))
-                            .foregroundColor(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity)
                     }
                     .padding(24)
                     .background(RoundedRectangle(cornerRadius: 16).fill(Color(hex: 0x1A1A1A)))
+
+                    ToggleSettingsCard(
+                        icon: "moon.fill",
+                        title: "Audio Only Mode",
+                        subtitle: "Dim screen during audio-only playback",
+                        isOn: $settings.audioOnlyMode
+                    )
                 }
                 .padding(.horizontal, TranquilTheme.standardPadding)
                 Spacer()
