@@ -10,10 +10,11 @@ struct TranquilTVApp: App {
         configureAudioSession()
     }
 
-    var body: some Scene {
+    var body: some SwiftUI.Scene {
         WindowGroup {
             SplashScreen()
                 .environmentObject(settings)
+                .environment(\.isFocusEffectEnabled, false)
         }
     }
 
