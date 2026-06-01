@@ -1,186 +1,154 @@
 {
   "identifier" : "TranquilTV",
-  "nonRenewingSubscriptions" : [
-
-  ],
+  "nonRenewingSubscriptions" : [],
   "products" : [
     {
-      "displayPrice" : "2.99",
+      "displayPrice" : "1.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_pack_nature",
-      "localizations" : [
-        {
-          "description" : "Unlock all nature-themed premium scenes",
-          "displayName" : "Nature Scenes Pack",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_pack_nature",
-      "referenceName" : "Nature Scenes Pack",
+      "internalID" : "scene_first_snow",
+      "localizations" : [{"description" : "Unlock First Snow scene", "displayName" : "First Snow", "locale" : "en_US"}],
+      "productID" : "scene_first_snow",
+      "referenceName" : "First Snow",
       "type" : "NonConsumable"
     },
     {
-      "displayPrice" : "2.99",
+      "displayPrice" : "1.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_pack_sleep",
-      "localizations" : [
-        {
-          "description" : "Unlock all sleep-themed premium scenes",
-          "displayName" : "Sleep Sounds Pack",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_pack_sleep",
-      "referenceName" : "Sleep Sounds Pack",
+      "internalID" : "scene_autumn_leaves",
+      "localizations" : [{"description" : "Unlock Autumn Leaves scene", "displayName" : "Autumn Leaves", "locale" : "en_US"}],
+      "productID" : "scene_autumn_leaves",
+      "referenceName" : "Autumn Leaves",
       "type" : "NonConsumable"
     },
     {
-      "displayPrice" : "2.99",
+      "displayPrice" : "1.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_pack_focus",
-      "localizations" : [
-        {
-          "description" : "Unlock all focus-themed premium scenes",
-          "displayName" : "Focus Pack",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_pack_focus",
-      "referenceName" : "Focus Pack",
+      "internalID" : "focus_flow",
+      "localizations" : [{"description" : "Unlock Focus & Flow", "displayName" : "Focus & Flow", "locale" : "en_US"}],
+      "productID" : "focus_flow",
+      "referenceName" : "Focus & Flow",
       "type" : "NonConsumable"
     },
     {
-      "displayPrice" : "0.99",
+      "displayPrice" : "1.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_scene_tropical_dusk",
-      "localizations" : [
-        {
-          "description" : "Unlock the Tropical Dusk scene",
-          "displayName" : "Tropical Dusk",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_scene_tropical_dusk",
-      "referenceName" : "Tropical Dusk Scene",
+      "internalID" : "grounding_stability",
+      "localizations" : [{"description" : "Unlock Grounding & Stability", "displayName" : "Grounding & Stability", "locale" : "en_US"}],
+      "productID" : "grounding_stability",
+      "referenceName" : "Grounding & Stability",
       "type" : "NonConsumable"
     },
     {
-      "displayPrice" : "0.99",
+      "displayPrice" : "1.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_scene_desert_calm",
-      "localizations" : [
-        {
-          "description" : "Unlock the Desert & Dunes Calm scene",
-          "displayName" : "Desert Calm",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_scene_desert_calm",
-      "referenceName" : "Desert Calm Scene",
+      "internalID" : "anxiety_relief",
+      "localizations" : [{"description" : "Unlock Anxiety Relief", "displayName" : "Anxiety Relief", "locale" : "en_US"}],
+      "productID" : "anxiety_relief",
+      "referenceName" : "Anxiety Relief",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "japanese_forrest",
+      "localizations" : [{"description" : "Unlock Japanese Forest Paths", "displayName" : "Japanese Forest", "locale" : "en_US"}],
+      "productID" : "japanese_forrest",
+      "referenceName" : "Japanese Forest",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "mountains_calm",
+      "localizations" : [{"description" : "Unlock Mountain & Highlands Calm", "displayName" : "Mountains Calm", "locale" : "en_US"}],
+      "productID" : "mountains_calm",
+      "referenceName" : "Mountains Calm",
       "type" : "NonConsumable"
     },
     {
       "displayPrice" : "0.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_scene_nordic_cabins",
-      "localizations" : [
-        {
-          "description" : "Unlock the Nordic Cabins scene",
-          "displayName" : "Nordic Cabins",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_scene_nordic_cabins",
-      "referenceName" : "Nordic Cabins Scene",
+      "internalID" : "audio_wind_chimes",
+      "localizations" : [{"description" : "Unlock Wind Chimes audio", "displayName" : "Wind Chimes", "locale" : "en_US"}],
+      "productID" : "audio_wind_chimes",
+      "referenceName" : "Wind Chimes",
       "type" : "NonConsumable"
     },
     {
       "displayPrice" : "0.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_audio_thunderstorm",
-      "localizations" : [
-        {
-          "description" : "Unlock the Thunderstorm audio experience",
-          "displayName" : "Thunderstorm Audio",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_audio_thunderstorm",
-      "referenceName" : "Thunderstorm Audio",
+      "internalID" : "distant_thunder",
+      "localizations" : [{"description" : "Unlock Distant Thunder audio", "displayName" : "Distant Thunder", "locale" : "en_US"}],
+      "productID" : "distant_thunder",
+      "referenceName" : "Distant Thunder",
       "type" : "NonConsumable"
     },
     {
       "displayPrice" : "0.99",
       "familyShareable" : false,
-      "internalID" : "tranquil_audio_windchimes",
-      "localizations" : [
-        {
-          "description" : "Unlock the Wind Chimes audio experience",
-          "displayName" : "Wind Chimes Audio",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "tranquil_audio_windchimes",
-      "referenceName" : "Wind Chimes Audio",
+      "internalID" : "crackling_campfire",
+      "localizations" : [{"description" : "Unlock Crackling Campfire audio", "displayName" : "Crackling Campfire", "locale" : "en_US"}],
+      "productID" : "crackling_campfire",
+      "referenceName" : "Crackling Campfire",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "3.98",
+      "familyShareable" : false,
+      "internalID" : "pack_sleep_mode",
+      "localizations" : [{"description" : "Sleep Mode bundle", "displayName" : "Sleep Mode", "locale" : "en_US"}],
+      "productID" : "pack_sleep_mode",
+      "referenceName" : "Sleep Mode Pack",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "3.98",
+      "familyShareable" : false,
+      "internalID" : "pack_study",
+      "localizations" : [{"description" : "Study Pack bundle", "displayName" : "Study Pack", "locale" : "en_US"}],
+      "productID" : "pack_study",
+      "referenceName" : "Study Pack",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "3.98",
+      "familyShareable" : false,
+      "internalID" : "pack_calm_grounded",
+      "localizations" : [{"description" : "Calm & Grounded bundle", "displayName" : "Calm & Grounded", "locale" : "en_US"}],
+      "productID" : "pack_calm_grounded",
+      "referenceName" : "Calm & Grounded Pack",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "3.98",
+      "familyShareable" : false,
+      "internalID" : "pack_nature_escapes",
+      "localizations" : [{"description" : "Nature Escapes bundle", "displayName" : "Nature Escapes", "locale" : "en_US"}],
+      "productID" : "pack_nature_escapes",
+      "referenceName" : "Nature Escapes Pack",
       "type" : "NonConsumable"
     }
   ],
   "settings" : {
     "_applicationInternalID" : "co.futurewatch.TranquilTV",
     "_developerTeamID" : "",
-    "_storeKitErrors" : [
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Load Products"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Purchase"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Verify Receipt"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "App Store Sync"
-      }
-    ]
+    "_storeKitErrors" : []
   },
   "subscriptionGroups" : [
     {
       "id" : "tranquil_premium_group",
-      "localizations" : [
-        {
-          "displayName" : "Tranquil Premium",
-          "locale" : "en_US"
-        }
-      ],
+      "localizations" : [{"displayName" : "Tranquil Premium", "locale" : "en_US"}],
       "name" : "Tranquil Premium",
       "subscriptions" : [
         {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "3.99",
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "4.99",
           "familyShareable" : true,
           "groupNumber" : 1,
           "internalID" : "tranquil_premium_monthly",
           "introductoryOffer" : null,
-          "localizations" : [
-            {
-              "description" : "Access all premium scenes and audio with a monthly subscription",
-              "displayName" : "Tranquil Premium Monthly",
-              "locale" : "en_US"
-            }
-          ],
+          "localizations" : [{"description" : "All premium content monthly", "displayName" : "Tranquil Premium Monthly", "locale" : "en_US"}],
           "productID" : "tranquil_premium_monthly",
           "referenceName" : "Tranquil Premium Monthly",
           "recurringSubscriptionPeriod" : "P1M",
