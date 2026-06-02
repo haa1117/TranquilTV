@@ -47,6 +47,18 @@ struct AnalyticsService {
         log("purchase_success", ["product_id": productId])
     }
 
+    static func logLockedSceneTapped(sceneId: String, sceneName: String, category: String, section: String) {
+        log("locked_scene_tapped", ["scene_id": sceneId, "scene_name": sceneName, "category": category, "section": section])
+    }
+
+    static func logAudioOnlyTapped(itemId: String, title: String, category: String, isFree: Bool, section: String) {
+        log("audio_only_tapped", ["item_id": itemId, "title": title, "category": category, "is_free": isFree, "section": section])
+    }
+
+    static func logPackTapped(packId: String, packName: String) {
+        log("pack_tapped", ["pack_id": packId, "pack_name": packName])
+    }
+
     private static func log(_ event: String, _ params: [String: Any] = [:]) {
         // TODO: Replace with Firebase Analytics call:
         // Analytics.logEvent(event, parameters: params)

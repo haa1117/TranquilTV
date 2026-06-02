@@ -162,4 +162,17 @@ extension View {
     func tvFocusStyle(isFocused: Bool) -> some View {
         modifier(TVFocusModifier(isFocused: isFocused))
     }
+
+    /// Uses `@Environment(\.isFocused)` — for plain `Button` focus chrome.
+    func tvFocusStyle() -> some View {
+        modifier(AutoTVFocusModifier())
+    }
+}
+
+private struct AutoTVFocusModifier: ViewModifier {
+    @Environment(\.isFocused) private var isFocused
+
+    func body(content: Content) -> some View {
+        content.tvFocusStyle(isFocused: isFocused)
+    }
 }

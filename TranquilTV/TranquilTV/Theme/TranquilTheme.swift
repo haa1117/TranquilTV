@@ -25,6 +25,7 @@ struct TranquilTheme {
     static let headerHorizontalPadding: CGFloat = 48
     static let headerVerticalPadding: CGFloat = 32
     static let sectionSpacing: CGFloat = 32
+    static let rowSpacing: CGFloat = sectionSpacing
     static let sectionHeaderSpacing: CGFloat = 18
     static let cardSpacing: CGFloat = 20
     static let rowVerticalPadding: CGFloat = 10

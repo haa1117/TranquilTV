@@ -260,29 +260,28 @@ struct AudioSettingsPage: View {
                         Text("Default Volume")
                             .font(.system(size: 22, weight: .semibold))
                             .foregroundColor(.white)
-                        HStack(spacing: 24) {
-                            FocusableCircleButton(icon: "minus", size: 48) {
-                                settings.defaultVolume = max(0, settings.defaultVolume - 0.05)
-                            }
-                            Text("\(Int(settings.defaultVolume * 100))%")
-                                .font(.system(size: 28, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 80)
-                            FocusableCircleButton(icon: "plus", size: 48) {
-                                settings.defaultVolume = min(1, settings.defaultVolume + 0.05)
+                        HStack(spacing: 12) {
+                            ForEach([0.25, 0.5, 0.75, 1.0], id: \.self) { level in
+                                let isSelected = abs(settings.defaultVolume - level) < 0.01
+                                TranquilFocusButton(action: {
+                                    settings.defaultVolume = level
+                                }) { isFocused in
+                                    Text("\(Int(level * 100))%")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(isSelected ? .white : .white.opacity(0.7))
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 12)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(isSelected ? theme.accentColor : Color(hex: 0x1A1A1A))
+                                        )
+                                        .tvFocusStyle(isFocused: isFocused)
+                                }
                             }
                         }
-                        .frame(maxWidth: .infinity)
                     }
                     .padding(24)
                     .background(RoundedRectangle(cornerRadius: 16).fill(Color(hex: 0x1A1A1A)))
-
-                    ToggleSettingsCard(
-                        icon: "moon.fill",
-                        title: "Audio Only Mode",
-                        subtitle: "Dim screen during audio-only playback",
-                        isOn: $settings.audioOnlyMode
-                    )
                 }
                 .padding(.horizontal, TranquilTheme.standardPadding)
                 Spacer()

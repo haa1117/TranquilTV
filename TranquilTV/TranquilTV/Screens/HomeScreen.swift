@@ -6,9 +6,6 @@ struct HomeScreen: View {
     @State private var navigationPath = NavigationPath()
     @State private var showSettings = false
     @State private var showPaywall = false
-    @State private var paywallProductId: String? = nil
-    @State private var paywallProductTitle: String? = nil
-    @State private var bundlePickerPack: PackDefinition? = nil
     @State private var lockedScene: Scene? = nil
     @State private var lockedAudio: AudioOnlyItem? = nil
     @State private var showLockedSceneAlert = false
@@ -16,20 +13,10 @@ struct HomeScreen: View {
 
     private var theme: AppTheme { settings.currentTheme }
 
-    /// Unique focus keys per home row — scenes can appear in multiple rows (Featured + Free).
-    private enum HomeFocusKey {
-        static func featured(sceneId: String) -> String { "featured-\(sceneId)" }
-        static func free(sceneId: String) -> String { "free-\(sceneId)" }
-        static func premium(sceneId: String) -> String { "premium-\(sceneId)" }
-        static func favoriteScene(sceneId: String) -> String { "favorite-scene-\(sceneId)" }
-        static func favoriteAudio(itemId: String) -> String { "favorite-audio-\(itemId)" }
-        static func audio(itemId: String) -> String { "audio-\(itemId)" }
-        static func pack(packId: String) -> String { "pack-\(packId)" }
-    }
-
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
+                // Background gradient
                 LinearGradient(
                     colors: theme.gradientColors,
                     startPoint: .topLeading,
@@ -37,19 +24,17 @@ struct HomeScreen: View {
                 )
                 .ignoresSafeArea()
 
-                AmbientBackgroundView()
-
                 VStack(spacing: 0) {
                     // Header
                     AppHeaderView(
                         isPremium: settings.isPremium,
                         onSettingsTap: { showSettings = true },
-                        onUpgradeTap: { openPaywall(productId: nil, title: nil) }
+                        onUpgradeTap: { showPaywall = true }
                     )
 
                     // Scrollable content rows
                     ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(alignment: .leading, spacing: TranquilTheme.sectionSpacing) {
+                        LazyVStack(alignment: .leading, spacing: TranquilTheme.rowSpacing) {
                             // Featured
                             categoryRow(
                                 title: "Featured",
@@ -69,8 +54,7 @@ struct HomeScreen: View {
                             categoryRow(
                                 title: "Free Scenes",
                                 icon: "leaf.fill",
-                                scenes: viewModel.freeScenes,
-                                sectionKey: "free"
+                                scenes: viewModel.freeScenes
                             )
 
                             // Premium Scenes
@@ -88,19 +72,7 @@ struct HomeScreen: View {
                 SettingsScreen()
             }
             .fullScreenCover(isPresented: $showPaywall) {
-                PaywallScreen(productId: paywallProductId, productTitle: paywallProductTitle)
-            }
-            .fullScreenCover(item: $bundlePickerPack) { pack in
-                BundlePickerScreen(
-                    pack: pack,
-                    onSelectScene: { scene in
-                        bundlePickerPack = nil
-                        settings.lastPlayedContentType = .scene
-                        settings.lastPlayedSceneId = scene.id
-                        navigationPath.append(PlaybackContent.scene(scene))
-                    },
-                    onDismiss: { bundlePickerPack = nil }
-                )
+                PaywallScreen()
             }
             .alert("Premium Scene", isPresented: $showLockedSceneAlert, presenting: lockedScene) { scene in
                 Button("Subscribe Monthly") {
@@ -132,22 +104,12 @@ struct HomeScreen: View {
 
     // MARK: - Row builders
 
-    /// Full-width horizontal row — matches Android `clipBehavior: Clip.none` so cards
-    /// scroll off the screen edge instead of being clipped by section padding.
-    @ViewBuilder
-    private func horizontalCardScroll<Content: View>(
-        height: CGFloat,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        HorizontalCardScrollRow(height: height, content: content)
-    }
-
     @ViewBuilder
     private func categoryRow(title: String, icon: String, scenes: [Scene]) -> some View {
         VStack(alignment: .leading, spacing: 18) {
             SectionHeaderView(title: title, icon: icon)
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: TranquilTheme.cardSpacing) {
+                LazyHStack(spacing: TranquilTheme.cardSpacing) {
                     ForEach(scenes) { scene in
                         SceneCardView(
                             scene: scene,
@@ -229,29 +191,19 @@ struct HomeScreen: View {
                     ForEach(viewModel.audioOnlyItems) { item in
                         AudioCardView(
                             item: item,
-                            isLocked: !viewModel.canAccess(audio: item),
-                            focusNamespace: homeFocusScope
+                            isLocked: !viewModel.canAccess(audio: item)
                         ) {
                             handleAudioSelect(item)
                         }
                     }
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 20)
-                .scrollTargetLayout()
+                .padding(.horizontal, 4)
+                .padding(.vertical, 12)
             }
-            .scrollTargetBehavior(.viewAligned)
-            .focusSection()
         }
     }
 
     // MARK: - Navigation
-
-    private func openPaywall(productId: String?, title: String?) {
-        paywallProductId = productId
-        paywallProductTitle = title
-        showPaywall = true
-    }
 
     private func handleSceneSelect(_ scene: Scene) {
         AnalyticsService.logSceneTapped(sceneId: scene.id, sceneName: scene.name,

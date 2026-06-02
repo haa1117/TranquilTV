@@ -19,6 +19,18 @@ enum PremiumUnlockAction {
     case cancel
     case buyPremium
     case buyCategory
+    case restore
+}
+
+private enum DialogFocusID: Hashable {
+    case cancel
+    case buyPremium
+    case buyCategory
+    case restore
+}
+
+private enum DialogButtonStyle {
+    case primary, accent, secondary
 }
 
 struct PremiumUnlockDialog: View {
@@ -30,6 +42,7 @@ struct PremiumUnlockDialog: View {
     @State private var isPurchasing = false
     @State private var purchaseError: String?
     @State private var showError = false
+    @FocusState private var focusedAction: DialogFocusID?
     @Namespace private var dialogFocusScope
 
     private var theme: AppTheme { settings.currentTheme }
@@ -259,31 +272,31 @@ struct PremiumUnlockDialog: View {
     private var actionButtons: some View {
         HStack(spacing: 16) {
             dialogButton(
+                focusId: .cancel,
                 title: "Cancel",
                 icon: "xmark",
-                style: .secondary,
-                isDefault: false
+                style: .secondary
             ) {
                 onAction(.cancel)
             }
 
             dialogButton(
+                focusId: .buyPremium,
                 title: "Buy Premium",
                 subtitle: "\(subscriptionPrice)/mo",
                 icon: "star.fill",
-                style: .primary,
-                isDefault: true
+                style: .primary
             ) {
                 Task { await purchaseSubscription() }
             }
 
             if oneTimeProductId != nil {
                 dialogButton(
+                    focusId: .buyCategory,
                     title: buyCategoryTitle,
                     subtitle: categoryPrice,
                     icon: content.isPack ? "bag.fill" : "cart.fill",
-                    style: .accent,
-                    isDefault: false
+                    style: .accent
                 ) {
                     Task { await purchaseCategory() }
                 }
