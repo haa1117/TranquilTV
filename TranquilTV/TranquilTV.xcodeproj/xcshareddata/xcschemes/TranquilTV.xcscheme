@@ -13,5 +13,7 @@
          <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="AATARGET1" BuildableName="TranquilTV.app" BlueprintName="TranquilTV" ReferencedContainer="container:TranquilTV.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference identifier="Products.storekit" path="TranquilTV/Resources/Products.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
 </Scheme>
