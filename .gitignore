@@ -33,5 +33,9 @@ GoogleService-Info.plist
 *.env
 secrets/
 
+# Patch artifacts
+*.orig
+*.rej
+
 # SPM resolved (keep if using SPM)
 # Package.resolved
