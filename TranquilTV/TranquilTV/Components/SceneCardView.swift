@@ -51,7 +51,7 @@ private struct SceneCardLabel: View {
                             .fill(Color.gray.opacity(0.3))
                             .overlay(
                                 Image(systemName: "photo")
-                                    .font(.system(size: 48 * TranquilTheme.homeCardScale))
+                                    .font(.system(size: 64))
                                     .foregroundColor(.white.opacity(0.4))
                             )
                     }
@@ -68,7 +68,7 @@ private struct SceneCardLabel: View {
                 if isLocked {
                     Color.black.opacity(0.25)
                     Image(systemName: "lock.fill")
-                        .font(.system(size: 48 * TranquilTheme.homeCardScale))
+                        .font(.system(size: 64))
                         .foregroundColor(theme.accentColor)
                 }
 
@@ -76,15 +76,15 @@ private struct SceneCardLabel: View {
                     VStack {
                         HStack {
                             Spacer()
-                            HStack(spacing: 3) {
+                            HStack(spacing: 6) {
                                 Image(systemName: "lock.fill")
-                                    .font(.system(size: 11))
+                                    .font(.system(size: 16))
                                 Text("Premium")
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(.system(size: 18, weight: .bold))
                             }
                             .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 5)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
                             .background(theme.premiumBadgeColor.opacity(0.9))
                             .clipShape(Capsule())
                         }
@@ -97,9 +97,9 @@ private struct SceneCardLabel: View {
                     VStack {
                         HStack {
                             Image(systemName: "star.fill")
-                                .font(.system(size: 14))
+                                .font(.system(size: 20))
                                 .foregroundColor(.yellow)
-                                .padding(6)
+                                .padding(8)
                                 .background(Circle().fill(Color.black.opacity(0.45)))
                             Spacer()
                         }
@@ -196,7 +196,7 @@ private struct AudioCardLabel: View {
                             .fill(theme.accentColor.opacity(0.25))
                             .overlay(
                                 Image(systemName: categoryIcon)
-                                    .font(.system(size: 48 * TranquilTheme.homeCardScale))
+                                    .font(.system(size: 64))
                                     .foregroundColor(theme.accentColor.opacity(0.8))
                             )
                     }
@@ -213,23 +213,23 @@ private struct AudioCardLabel: View {
                 VStack {
                     HStack {
                         Text("Audio")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white.opacity(0.9))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
                             .background(Color.black.opacity(0.5))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                         Spacer()
                         if isLocked {
-                            HStack(spacing: 3) {
+                            HStack(spacing: 6) {
                                 Image(systemName: "lock.fill")
-                                    .font(.system(size: 11))
+                                    .font(.system(size: 16))
                                 Text("Premium")
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(.system(size: 18, weight: .bold))
                             }
                             .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 5)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
                             .background(theme.premiumBadgeColor.opacity(0.9))
                             .clipShape(Capsule())
                         }
@@ -241,7 +241,7 @@ private struct AudioCardLabel: View {
                 if isLocked {
                     Color.black.opacity(0.25)
                     Image(systemName: "lock.fill")
-                        .font(.system(size: 48 * TranquilTheme.homeCardScale))
+                        .font(.system(size: 64))
                         .foregroundColor(theme.accentColor)
                 }
 

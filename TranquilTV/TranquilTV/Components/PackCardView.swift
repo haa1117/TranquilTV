@@ -122,12 +122,14 @@ private struct PackCardLabel: View {
                 .resizable()
                 .scaledToFill()
         } else {
+            let slotWidth = (TranquilTheme.sceneCardWidth - 2 * 2) / 3   // 2pt gaps between 3 slots
             HStack(spacing: 2) {
                 ForEach(Array(assets.prefix(3).enumerated()), id: \.offset) { _, asset in
                     Image(asset)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: TranquilTheme.sceneCardWidth / 3 - 1)
+                        .frame(width: slotWidth, height: TranquilTheme.packCardHeight)
+                        .clipped()
                 }
             }
         }

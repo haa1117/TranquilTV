@@ -26,18 +26,20 @@ struct CardFocusChrome: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scaleEffect(isFocused ? TranquilTheme.cardScaleFocused : 1.0, anchor: .center)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(
-                        isFocused ? accentColor.opacity(0.9) : Color.clear,
-                        lineWidth: isFocused ? TranquilTheme.focusBorderWidth : 0
-                    )
-            }
             .shadow(
                 color: isFocused ? accentColor.opacity(0.35) : Color.black.opacity(0.4),
                 radius: isFocused ? 12 : 10,
                 y: isFocused ? 8 : 8
             )
+            // Border drawn AFTER scale so it sits outside the scaled card frame
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius * (isFocused ? TranquilTheme.cardScaleFocused : 1.0))
+                    .stroke(
+                        isFocused ? accentColor.opacity(0.9) : Color.clear,
+                        lineWidth: isFocused ? TranquilTheme.focusBorderWidth : 0
+                    )
+                    .scaleEffect(isFocused ? TranquilTheme.cardScaleFocused : 1.0, anchor: .center)
+            }
             .animation(.easeInOut(duration: 0.2), value: isFocused)
             .zIndex(isFocused ? 1 : 0)
     }
