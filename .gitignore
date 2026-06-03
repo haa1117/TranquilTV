@@ -37,5 +37,8 @@ secrets/
 *.orig
 *.rej
 
+# App icon design source exports (compiled into Assets.xcassets)
+/Tranquil *.png
+
 # SPM resolved (keep if using SPM)
 # Package.resolved
