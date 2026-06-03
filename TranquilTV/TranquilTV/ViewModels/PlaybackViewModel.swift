@@ -257,13 +257,16 @@ class PlaybackViewModel: ObservableObject {
     }
 }
 
-extension PlaybackContent {
+extension PlaybackContent: Identifiable {
     var id: String {
         switch self {
         case .scene(let s): return s.id
         case .audioOnly(let a): return a.id
         }
     }
+}
+
+extension PlaybackContent {
     var name: String {
         switch self {
         case .scene(let s): return s.name
