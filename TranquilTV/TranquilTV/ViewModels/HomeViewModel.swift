@@ -14,6 +14,7 @@ class HomeViewModel: ObservableObject {
     var freeScenes: [Scene] { sceneService.freeScenes }
     var premiumScenes: [Scene] { sceneService.premiumScenes }
     var audioOnlyItems: [AudioOnlyItem] { audioService.allItems }
+    var paidPacks: [PackDefinition] { PackService.allPacks.filter { !$0.isFree } }
 
     var hasAnyFavorites: Bool {
         !favoriteScenes.isEmpty || !favoriteAudioItems.isEmpty
@@ -22,15 +23,23 @@ class HomeViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
+        reloadFavorites(
+            sceneIds: settings.favoriteSceneIds,
+            audioIds: settings.favoriteAudioIds
+        )
+
         settings.$favoriteSceneIds
             .combineLatest(settings.$favoriteAudioIds)
             .receive(on: RunLoop.main)
-            .sink { [weak self] (sceneIds, audioIds) in
-                guard let self else { return }
-                self.favoriteScenes = self.sceneService.allScenes.filter { sceneIds.contains($0.id) }
-                self.favoriteAudioItems = self.audioService.allItems.filter { audioIds.contains($0.id) }
+            .sink { [weak self] sceneIds, audioIds in
+                self?.reloadFavorites(sceneIds: sceneIds, audioIds: audioIds)
             }
             .store(in: &cancellables)
+    }
+
+    private func reloadFavorites(sceneIds: Set<String>, audioIds: Set<String>) {
+        favoriteScenes = sceneService.allScenes.filter { sceneIds.contains($0.id) }
+        favoriteAudioItems = audioService.allItems.filter { audioIds.contains($0.id) }
     }
 
     func canAccess(scene: Scene) -> Bool {

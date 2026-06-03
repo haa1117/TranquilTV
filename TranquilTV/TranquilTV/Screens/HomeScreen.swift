@@ -3,98 +3,77 @@ import SwiftUI
 struct HomeScreen: View {
     @StateObject private var viewModel = HomeViewModel()
     @ObservedObject private var settings = SettingsService.shared
-    @State private var navigationPath = NavigationPath()
+    @State private var playbackContent: PlaybackContent? = nil
     @State private var showSettings = false
     @State private var showPaywall = false
-    @State private var lockedScene: Scene? = nil
-    @State private var lockedAudio: AudioOnlyItem? = nil
-    @State private var showLockedSceneAlert = false
-    @State private var showLockedAudioAlert = false
+    @State private var unlockContent: PremiumUnlockContent? = nil
+
+    @Namespace private var focusNamespace
 
     private var theme: AppTheme { settings.currentTheme }
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            ZStack {
-                // Background gradient
-                LinearGradient(
-                    colors: theme.gradientColors,
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+        ZStack {
+            LinearGradient(
+                colors: theme.gradientColors,
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Header is its own focus section — vertical nav cycles between
+                // header and the content section cleanly.
+                AppHeaderView(
+                    isPremium: settings.isPremium,
+                    focusNamespace: focusNamespace,
+                    onSettingsTap: { showSettings = true },
+                    onUpgradeTap: { showPaywall = true }
                 )
-                .ignoresSafeArea()
+                .focusSection()
 
-                VStack(spacing: 0) {
-                    // Header
-                    AppHeaderView(
-                        isPremium: settings.isPremium,
-                        onSettingsTap: { showSettings = true },
-                        onUpgradeTap: { showPaywall = true }
-                    )
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVStack(alignment: .leading, spacing: TranquilTheme.rowSpacing) {
+                        // Hero card — full-width, time-driven scheduled mood or featured fallback.
+                        ScheduledMoodHeroCard(
+                            onSelect: { handleSceneSelect($0) },
+                            onLocked: { unlockContent = .scene($0) },
+                            prefersDefaultFocus: true,
+                            focusNamespace: focusNamespace
+                        )
 
-                    // Scrollable content rows
-                    ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(alignment: .leading, spacing: TranquilTheme.rowSpacing) {
-                            // Featured
-                            categoryRow(
-                                title: "Featured",
-                                icon: "sparkles",
-                                scenes: viewModel.featuredScenes
-                            )
-
-                            // Favorites (only when user has favorites)
-                            if viewModel.hasAnyFavorites {
-                                favoritesRow()
-                            }
-
-                            // Audio Only
-                            audioOnlyRow()
-
-                            // Free Scenes
-                            categoryRow(
-                                title: "Free Scenes",
-                                icon: "leaf.fill",
-                                scenes: viewModel.freeScenes
-                            )
-
-                            // Premium Scenes
-                            premiumScenesRow()
+                        if viewModel.hasAnyFavorites {
+                            favoritesRow()
                         }
-                        .padding(.horizontal, TranquilTheme.standardPadding)
-                        .padding(.bottom, 80)
+
+                        audioOnlyRow()
+
+                        categoryRow(
+                            title: "Free Scenes",
+                            icon: "leaf.fill",
+                            scenes: viewModel.freeScenes
+                        )
+
+                        premiumScenesRow()
+
+                        bundlesRow()
                     }
+                    .padding(.bottom, 80)
                 }
+                .focusSection()
             }
-            .navigationDestination(for: PlaybackContent.self) { content in
-                PlaybackScreen(content: content)
-            }
-            .fullScreenCover(isPresented: $showSettings) {
-                SettingsScreen()
-            }
-            .fullScreenCover(isPresented: $showPaywall) {
-                PaywallScreen()
-            }
-            .alert("Premium Scene", isPresented: $showLockedSceneAlert, presenting: lockedScene) { scene in
-                Button("Subscribe Monthly") {
-                    showPaywall = true
+        }
+        .fullScreenCover(item: $playbackContent) { content in
+            PlaybackScreen(content: content)
+        }
+        .fullScreenCover(isPresented: $showSettings) { SettingsScreen() }
+        .fullScreenCover(isPresented: $showPaywall) { PaywallScreen() }
+        .fullScreenCover(item: $unlockContent) { content in
+            PremiumUnlockDialog(content: content) { action in
+                switch action {
+                case .cancel, .buyPremium, .buyCategory, .buyBundle, .restore:
+                    unlockContent = nil
                 }
-                if let pid = settings.oneTimeProductForSceneCategory(scene.category) {
-                    Button("Buy Once") {
-                        // StoreKit purchase handled in PaywallScreen for now
-                        showPaywall = true
-                    }
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: { scene in
-                Text("Unlock \"\(scene.name)\" with a Premium subscription or a one-time purchase.")
-            }
-            .alert("Premium Audio", isPresented: $showLockedAudioAlert, presenting: lockedAudio) { item in
-                Button("Subscribe Monthly") {
-                    showPaywall = true
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: { item in
-                Text("Unlock \"\(item.title)\" with a Premium subscription.")
             }
         }
         .onAppear {
@@ -108,20 +87,27 @@ struct HomeScreen: View {
     private func categoryRow(title: String, icon: String, scenes: [Scene]) -> some View {
         VStack(alignment: .leading, spacing: 18) {
             SectionHeaderView(title: title, icon: icon)
+                .padding(.leading, TranquilTheme.standardPadding)
+
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: TranquilTheme.cardSpacing) {
-                    ForEach(scenes) { scene in
+                    ForEach(Array(scenes.enumerated()), id: \.element.id) { index, scene in
                         SceneCardView(
                             scene: scene,
-                            isLocked: !viewModel.canAccess(scene: scene)
+                            isLocked: !viewModel.canAccess(scene: scene),
+                            prefersDefaultFocus: false,
+                            focusNamespace: focusNamespace
                         ) {
                             handleSceneSelect(scene)
                         }
+                        .id(index)
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.leading, TranquilTheme.focusEdgeInset)
+                .padding(.trailing, TranquilTheme.focusEdgeInset)
                 .padding(.vertical, 12)
             }
+            .zIndex(1)
         }
     }
 
@@ -136,19 +122,28 @@ struct HomeScreen: View {
                     .font(TranquilTheme.sectionTitleFont)
                     .foregroundColor(.white)
             }
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: TranquilTheme.cardSpacing) {
-                    ForEach(viewModel.premiumScenes) { scene in
-                        SceneCardView(
-                            scene: scene,
-                            isLocked: !viewModel.canAccess(scene: scene)
-                        ) {
-                            handleSceneSelect(scene)
+            .padding(.leading, TranquilTheme.standardPadding)
+
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: TranquilTheme.cardSpacing) {
+                        ForEach(Array(viewModel.premiumScenes.enumerated()), id: \.element.id) { index, scene in
+                            SceneCardView(
+                                scene: scene,
+                                isLocked: !viewModel.canAccess(scene: scene),
+                                prefersDefaultFocus: index == 0,
+                                focusNamespace: focusNamespace
+                            ) {
+                                handleSceneSelect(scene)
+                            }
+                            .id(index)
                         }
                     }
+                    .padding(.leading, TranquilTheme.focusEdgeInset)
+                    .padding(.trailing, TranquilTheme.focusEdgeInset)
+                    .padding(.vertical, 12)
                 }
-                .padding(.horizontal, 4)
-                .padding(.vertical, 12)
+                .zIndex(1)
             }
         }
     }
@@ -157,27 +152,39 @@ struct HomeScreen: View {
     private func favoritesRow() -> some View {
         VStack(alignment: .leading, spacing: 18) {
             SectionHeaderView(title: "Favorites", icon: "heart.fill")
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: TranquilTheme.cardSpacing) {
-                    ForEach(viewModel.favoriteScenes) { scene in
-                        SceneCardView(
-                            scene: scene,
-                            isLocked: !viewModel.canAccess(scene: scene)
-                        ) {
-                            handleSceneSelect(scene)
+                .padding(.leading, TranquilTheme.standardPadding)
+
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: TranquilTheme.cardSpacing) {
+                        ForEach(Array(viewModel.favoriteScenes.enumerated()), id: \.element.id) { index, scene in
+                            SceneCardView(
+                                scene: scene,
+                                isLocked: !viewModel.canAccess(scene: scene),
+                                prefersDefaultFocus: index == 0,
+                                focusNamespace: focusNamespace
+                            ) {
+                                handleSceneSelect(scene)
+                            }
+                            .id(index)
+                        }
+                        ForEach(Array(viewModel.favoriteAudioItems.enumerated()), id: \.element.id) { index, item in
+                            AudioCardView(
+                                item: item,
+                                isLocked: !viewModel.canAccess(audio: item),
+                                prefersDefaultFocus: viewModel.favoriteScenes.isEmpty && index == 0,
+                                focusNamespace: focusNamespace
+                            ) {
+                                handleAudioSelect(item)
+                            }
+                            .id("a\(index)")
                         }
                     }
-                    ForEach(viewModel.favoriteAudioItems) { item in
-                        AudioCardView(
-                            item: item,
-                            isLocked: !viewModel.canAccess(audio: item)
-                        ) {
-                            handleAudioSelect(item)
-                        }
-                    }
+                    .padding(.leading, TranquilTheme.focusEdgeInset)
+                    .padding(.trailing, TranquilTheme.focusEdgeInset)
+                    .padding(.vertical, 12)
                 }
-                .padding(.horizontal, 4)
-                .padding(.vertical, 12)
+                .zIndex(1)
             }
         }
     }
@@ -186,19 +193,65 @@ struct HomeScreen: View {
     private func audioOnlyRow() -> some View {
         VStack(alignment: .leading, spacing: 18) {
             SectionHeaderView(title: "Audio Only", icon: "headphones")
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: TranquilTheme.cardSpacing) {
-                    ForEach(viewModel.audioOnlyItems) { item in
-                        AudioCardView(
-                            item: item,
-                            isLocked: !viewModel.canAccess(audio: item)
-                        ) {
-                            handleAudioSelect(item)
+                .padding(.leading, TranquilTheme.standardPadding)
+
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: TranquilTheme.cardSpacing) {
+                        ForEach(Array(viewModel.audioOnlyItems.enumerated()), id: \.element.id) { index, item in
+                            AudioCardView(
+                                item: item,
+                                isLocked: !viewModel.canAccess(audio: item),
+                                prefersDefaultFocus: index == 0,
+                                focusNamespace: focusNamespace
+                            ) {
+                                handleAudioSelect(item)
+                            }
+                            .id(index)
                         }
                     }
+                    .padding(.leading, TranquilTheme.focusEdgeInset)
+                    .padding(.trailing, TranquilTheme.focusEdgeInset)
+                    .padding(.vertical, 12)
                 }
-                .padding(.horizontal, 4)
-                .padding(.vertical, 12)
+                .zIndex(1)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func bundlesRow() -> some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 10) {
+                Image(systemName: "square.stack.3d.up.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(theme.accentColor)
+                Text("Bundles")
+                    .font(TranquilTheme.sectionTitleFont)
+                    .foregroundColor(.white)
+            }
+            .padding(.leading, TranquilTheme.standardPadding)
+
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: TranquilTheme.cardSpacing) {
+                        ForEach(Array(viewModel.paidPacks.enumerated()), id: \.element.id) { index, pack in
+                            PackCardView(
+                                pack: pack,
+                                isPurchased: settings.isPackPurchased(pack),
+                                prefersDefaultFocus: index == 0,
+                                focusNamespace: focusNamespace
+                            ) {
+                                handlePackSelect(pack)
+                            }
+                            .id(index)
+                        }
+                    }
+                    .padding(.leading, TranquilTheme.focusEdgeInset)
+                    .padding(.trailing, TranquilTheme.focusEdgeInset)
+                    .padding(.vertical, 12)
+                }
+                .zIndex(1)
             }
         }
     }
@@ -209,27 +262,24 @@ struct HomeScreen: View {
         AnalyticsService.logSceneTapped(sceneId: scene.id, sceneName: scene.name,
                                          category: scene.category, isFree: scene.isFree, section: "home")
         if viewModel.canAccess(scene: scene) {
-            navigationPath.append(PlaybackContent.scene(scene))
+            playbackContent = .scene(scene)
         } else {
-            lockedScene = scene
-            showLockedSceneAlert = true
+            unlockContent = .scene(scene)
         }
     }
 
     private func handleAudioSelect(_ item: AudioOnlyItem) {
         if viewModel.canAccess(audio: item) {
-            navigationPath.append(PlaybackContent.audioOnly(item))
+            playbackContent = .audioOnly(item)
         } else {
-            lockedAudio = item
-            showLockedAudioAlert = true
+            unlockContent = .audio(item)
         }
     }
-}
 
-// Make PlaybackContent NavigationPath-compatible
-extension PlaybackContent: Hashable {
-    static func == (lhs: PlaybackContent, rhs: PlaybackContent) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+    private func handlePackSelect(_ pack: PackDefinition) {
+        if settings.isPackPurchased(pack) || pack.isFree { return }
+        unlockContent = .pack(pack)
+    }
 }
 
 #Preview {
