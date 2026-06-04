@@ -41,6 +41,9 @@ class SettingsService: ObservableObject {
             UserDefaults.standard.set(Array(purchasedProductIds), forKey: Keys.purchasedProductIds)
         }
     }
+    @Published var sleepTimerDefaultPromptSuppressed: Bool {
+        didSet { UserDefaults.standard.set(sleepTimerDefaultPromptSuppressed, forKey: Keys.sleepTimerDefaultPromptSuppressed) }
+    }
     @Published var timeBasedSuggestionsEnabled: Bool {
         didSet { UserDefaults.standard.set(timeBasedSuggestionsEnabled, forKey: Keys.timeBasedSuggestionsEnabled) }
     }
@@ -73,6 +76,7 @@ class SettingsService: ObservableObject {
         static let favoriteSceneIds = "favoriteSceneIds"
         static let favoriteAudioIds = "favoriteAudioIds"
         static let purchasedProductIds = "purchasedProductIds"
+        static let sleepTimerDefaultPromptSuppressed = "sleepTimerDefaultPromptSuppressed"
         static let timeBasedSuggestionsEnabled = "timeBasedSuggestionsEnabled"
         static let scheduledMoodsEnabled = "scheduledMoodsEnabled"
         static let scheduledMoodBlocks = "scheduledMoodBlocks"
@@ -96,14 +100,15 @@ class SettingsService: ObservableObject {
         isPremium = defaults.bool(forKey: Keys.isPremium)
         let themeRaw = defaults.string(forKey: Keys.themeType) ?? AppThemeType.defaultTheme.rawValue
         currentThemeType = AppThemeType(rawValue: themeRaw) ?? .defaultTheme
-        defaultVolume = defaults.object(forKey: Keys.defaultVolume) as? Double ?? 0.8
-        defaultSleepTimerMinutes = defaults.object(forKey: Keys.defaultSleepTimerMinutes) as? Int ?? 30
+        defaultVolume = defaults.object(forKey: Keys.defaultVolume) as? Double ?? 1.0
+        defaultSleepTimerMinutes = defaults.object(forKey: Keys.defaultSleepTimerMinutes) as? Int ?? 0
         autoPlayLastScene = defaults.bool(forKey: Keys.autoPlayLastScene)
         audioOnlyMode = defaults.bool(forKey: Keys.audioOnlyMode)
         controlsAutoHideSeconds = defaults.object(forKey: Keys.controlsAutoHideSeconds) as? Int ?? 3
         favoriteSceneIds = Set(defaults.array(forKey: Keys.favoriteSceneIds) as? [String] ?? [])
         favoriteAudioIds = Set(defaults.array(forKey: Keys.favoriteAudioIds) as? [String] ?? [])
         purchasedProductIds = Set(defaults.array(forKey: Keys.purchasedProductIds) as? [String] ?? [])
+        sleepTimerDefaultPromptSuppressed = defaults.bool(forKey: Keys.sleepTimerDefaultPromptSuppressed)
         timeBasedSuggestionsEnabled = defaults.object(forKey: Keys.timeBasedSuggestionsEnabled) as? Bool ?? true
         scheduledMoodsEnabled = defaults.bool(forKey: Keys.scheduledMoodsEnabled)
         scheduledMoodBlocks = Self.loadScheduledBlocks(from: defaults)
