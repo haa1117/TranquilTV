@@ -19,6 +19,7 @@ enum PremiumUnlockAction {
     case cancel
     case buyPremium
     case buyCategory
+    case buyBundle
     case restore
 }
 
@@ -26,11 +27,12 @@ private enum DialogFocusID: Hashable {
     case cancel
     case buyPremium
     case buyCategory
+    case buyBundle
     case restore
 }
 
 private enum DialogButtonStyle {
-    case primary, accent, secondary
+    case primary, accent, secondary, muted
 }
 
 struct PremiumUnlockDialog: View {
@@ -40,12 +42,15 @@ struct PremiumUnlockDialog: View {
     @ObservedObject private var settings = SettingsService.shared
     @StateObject private var storeKit = StoreKitService.shared
     @State private var isPurchasing = false
+    @State private var isRestoring = false
     @State private var purchaseError: String?
     @State private var showError = false
     @FocusState private var focusedAction: DialogFocusID?
     @Namespace private var dialogFocusScope
 
     private var theme: AppTheme { settings.currentTheme }
+
+    // MARK: - Computed helpers
 
     private var headline: String {
         switch content {
@@ -74,24 +79,36 @@ struct PremiumUnlockDialog: View {
 
     private var bodyMessage: String {
         switch content {
-        case .scene:
+        case .scene(let scene):
+            let bundle = IAPProductCatalog.packContainingSceneCategory(scene.category)
+            let hasOwn = IAPProductCatalog.oneTimeProductForSceneCategory(scene.category) != nil
+            if !hasOwn, let bundle {
+                return "Unlock all \(bundle.categories.count) scenes in \"\(bundle.name)\" with a one-time bundle purchase, or subscribe for full access to everything."
+            }
             return "This scene requires premium access. Subscribe for unlimited scenes, or buy this category once to own it forever."
         case .audio:
             return "This sound requires premium access. Subscribe for unlimited audio, or buy this track once to own it forever."
         case .pack(let pack):
-            return "Unlock all \(pack.categories.count) scenes in \"\(pack.name)\" with a bundle purchase, or subscribe for full access to everything."
+            return "Unlock all \(pack.categories.count) scenes in \"\(pack.name)\" with a one-time purchase, or subscribe for full access to everything."
         }
     }
 
+    /// Product ID for the single-item (scene / audio / pack) one-time purchase.
     private var oneTimeProductId: String? {
         switch content {
         case .scene(let scene):
-            return settings.oneTimeProductForSceneCategory(scene.category)
+            return IAPProductCatalog.oneTimeProductForSceneCategory(scene.category)
         case .audio(let item):
-            return settings.oneTimeProductForAudioTitle(item.title)
+            return IAPProductCatalog.oneTimeProductForAudioTitle(item.title)
         case .pack(let pack):
             return pack.productId
         }
+    }
+
+    /// Bundle that contains this scene (nil for audio/pack content).
+    private var containingBundle: PackDefinition? {
+        guard case .scene(let scene) = content else { return nil }
+        return IAPProductCatalog.packContainingSceneCategory(scene.category)
     }
 
     private var subscriptionPrice: String {
@@ -100,20 +117,29 @@ struct PremiumUnlockDialog: View {
 
     private var categoryPrice: String {
         guard let pid = oneTimeProductId, let product = storeKit.product(id: pid) else {
-            switch content {
-            case .pack(let pack): return pack.priceString
-            default: return "$1.99"
-            }
+            if case .pack(let pack) = content { return pack.priceString }
+            return "$1.99"
         }
         return product.displayPrice
+    }
+
+    private var bundlePrice: String {
+        guard let bundle = containingBundle else { return "" }
+        if let pid = bundle.productId, let product = storeKit.product(id: pid) {
+            return product.displayPrice
+        }
+        return bundle.priceString
     }
 
     private var buyCategoryTitle: String {
         switch content {
         case .pack: return "Buy Bundle"
-        case .scene, .audio: return "Buy Category"
+        case .scene(let scene): return "Buy \(scene.name)"
+        case .audio(let item): return "Buy \(item.title)"
         }
     }
+
+    // MARK: - Body
 
     var body: some View {
         ZStack {
@@ -124,7 +150,7 @@ struct PremiumUnlockDialog: View {
                 headerRow
 
                 previewImage
-                    .frame(width: 520, height: 292)
+                    .frame(width: 640, height: 340)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
@@ -132,27 +158,27 @@ struct PremiumUnlockDialog: View {
                     )
                     .shadow(color: theme.accentColor.opacity(0.25), radius: 24, y: 12)
 
-                VStack(spacing: 10) {
+                VStack(spacing: 14) {
                     Text(itemTitle)
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 38, weight: .bold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
 
                     Text(subtitle)
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.system(size: 22, weight: .medium))
                         .foregroundColor(theme.accentColor.opacity(0.95))
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
 
                     Text(bodyMessage)
-                        .font(.system(size: 17))
+                        .font(.system(size: 20))
                         .foregroundColor(.white.opacity(0.72))
                         .multilineTextAlignment(.center)
-                        .frame(maxWidth: 620)
+                        .frame(maxWidth: 780)
                         .padding(.top, 4)
                 }
 
-                if isPurchasing {
+                if isPurchasing || isRestoring {
                     ProgressView()
                         .tint(.white)
                         .scaleEffect(1.2)
@@ -161,10 +187,10 @@ struct PremiumUnlockDialog: View {
                     actionButtons
                 }
             }
-            .padding(.horizontal, 48)
-            .padding(.vertical, 40)
+            .padding(.horizontal, 64)
+            .padding(.vertical, 52)
             .background(
-                RoundedRectangle(cornerRadius: 28)
+                RoundedRectangle(cornerRadius: 32)
                     .fill(
                         LinearGradient(
                             colors: [
@@ -177,11 +203,11 @@ struct PremiumUnlockDialog: View {
                     )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 28)
+                RoundedRectangle(cornerRadius: 32)
                     .stroke(theme.accentColor.opacity(0.35), lineWidth: 1.5)
             )
             .shadow(color: .black.opacity(0.45), radius: 40, y: 20)
-            .frame(maxWidth: 760)
+            .frame(maxWidth: 1200)
             .focusScope(dialogFocusScope)
         }
         .onExitCommand { onAction(.cancel) }
@@ -196,12 +222,12 @@ struct PremiumUnlockDialog: View {
     // MARK: - Subviews
 
     private var headerRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 26, weight: .semibold))
+                .font(.system(size: 34, weight: .semibold))
                 .foregroundColor(theme.accentColor)
             Text(headline)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 36, weight: .bold))
                 .foregroundColor(.white)
         }
     }
@@ -251,12 +277,14 @@ struct PremiumUnlockDialog: View {
         } else if assets.count == 1 {
             categoryImage(assetName: assets[0], fallbackIcon: "square.stack.3d.up.fill")
         } else {
-            HStack(spacing: 3) {
+            let slotWidth = (640.0 - 3 * 2) / 3
+            HStack(spacing: 2) {
                 ForEach(Array(assets.prefix(3).enumerated()), id: \.offset) { _, asset in
                     Image(asset)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 520 / 3 - 2)
+                        .frame(width: slotWidth, height: 340)
+                        .clipped()
                 }
             }
             .overlay {
@@ -269,47 +297,116 @@ struct PremiumUnlockDialog: View {
         }
     }
 
+    // MARK: - Action buttons
+    //
+    // Layout rule:
+    //   Row 1: all main purchase CTAs (up to 3) — no Cancel here
+    //   Row 2: Restore Purchases  |  Cancel
+    //
+    // Bundle-only scene:  Buy Bundle  |  Subscribe
+    // Scene/Audio w IAP:  Subscribe   |  Buy Item  |  Buy Bundle (if in bundle)
+    // Pack:               Buy Pack    |  Subscribe
+
+    @ViewBuilder
     private var actionButtons: some View {
-        HStack(spacing: 16) {
-            dialogButton(
-                focusId: .cancel,
-                title: "Cancel",
-                icon: "xmark",
-                style: .secondary
-            ) {
-                onAction(.cancel)
-            }
+        let hasOwnIAP = oneTimeProductId != nil && !(content.isPack)
+        let bundleOnly = !hasOwnIAP && containingBundle != nil
 
-            dialogButton(
-                focusId: .buyPremium,
-                title: "Buy Premium",
-                subtitle: "\(subscriptionPrice)/mo",
-                icon: "star.fill",
-                style: .primary
-            ) {
-                Task { await purchaseSubscription() }
-            }
+        VStack(spacing: 16) {
+            // ── Row 1: purchase CTAs (no Cancel) ────────────────────────────
+            HStack(spacing: 16) {
+                if bundleOnly, let bundle = containingBundle {
+                    dialogButton(
+                        focusId: .buyBundle,
+                        title: "Buy \(bundle.name)",
+                        subtitle: bundlePrice.isEmpty ? nil : bundlePrice,
+                        icon: "bag.fill",
+                        style: .primary
+                    ) { Task { await purchaseBundle(bundle) } }
 
-            if oneTimeProductId != nil {
-                dialogButton(
-                    focusId: .buyCategory,
-                    title: buyCategoryTitle,
-                    subtitle: categoryPrice,
-                    icon: content.isPack ? "bag.fill" : "cart.fill",
-                    style: .accent
-                ) {
-                    Task { await purchaseCategory() }
+                    dialogButton(
+                        focusId: .buyPremium,
+                        title: "Subscribe to Premium",
+                        subtitle: "\(subscriptionPrice)/mo",
+                        icon: "star.fill",
+                        style: .accent
+                    ) { Task { await purchaseSubscription() } }
+
+                } else if case .pack = content {
+                    dialogButton(
+                        focusId: .buyCategory,
+                        title: buyCategoryTitle,
+                        subtitle: categoryPrice,
+                        icon: "bag.fill",
+                        style: .primary
+                    ) { Task { await purchaseCategory() } }
+
+                    dialogButton(
+                        focusId: .buyPremium,
+                        title: "Subscribe to Premium",
+                        subtitle: "\(subscriptionPrice)/mo",
+                        icon: "star.fill",
+                        style: .accent
+                    ) { Task { await purchaseSubscription() } }
+
+                } else {
+                    // Scene/audio with own IAP — optionally also in a bundle
+                    dialogButton(
+                        focusId: .buyPremium,
+                        title: "Subscribe to Premium",
+                        subtitle: "\(subscriptionPrice)/mo",
+                        icon: "star.fill",
+                        style: .accent
+                    ) { Task { await purchaseSubscription() } }
+
+                    if oneTimeProductId != nil {
+                        dialogButton(
+                            focusId: .buyCategory,
+                            title: buyCategoryTitle,
+                            subtitle: categoryPrice,
+                            icon: "cart.fill",
+                            style: .primary
+                        ) { Task { await purchaseCategory() } }
+                    }
+
+                    if let bundle = containingBundle {
+                        dialogButton(
+                            focusId: .buyBundle,
+                            title: "Buy \(bundle.name)",
+                            subtitle: bundlePrice.isEmpty ? nil : bundlePrice,
+                            icon: "square.stack.fill",
+                            style: .accent
+                        ) { Task { await purchaseBundle(bundle) } }
+                    }
                 }
             }
+
+            // ── Row 2: Restore | Cancel ──────────────────────────────────────
+            HStack(spacing: 16) {
+                dialogButton(
+                    focusId: .restore,
+                    title: "Restore Purchases",
+                    subtitle: nil,
+                    icon: "arrow.clockwise",
+                    style: .muted
+                ) { Task { await restorePurchases() } }
+
+                dialogButton(
+                    focusId: .cancel,
+                    title: "Cancel",
+                    subtitle: nil,
+                    icon: "xmark",
+                    style: .secondary
+                ) { onAction(.cancel) }
+            }
         }
-        .padding(.top, 4)
     }
 
     @ViewBuilder
     private func dialogButton(
         focusId: DialogFocusID,
         title: String,
-        subtitle: String? = nil,
+        subtitle: String?,
         icon: String,
         style: DialogButtonStyle,
         action: @escaping () -> Void
@@ -327,7 +424,7 @@ struct PremiumUnlockDialog: View {
         .focused($focusedAction, equals: focusId)
     }
 
-    // MARK: - Purchases
+    // MARK: - Purchase actions
 
     private func purchaseSubscription() async {
         guard let product = storeKit.subscriptionProduct() else {
@@ -372,6 +469,35 @@ struct PremiumUnlockDialog: View {
         }
     }
 
+    private func purchaseBundle(_ bundle: PackDefinition) async {
+        guard let productId = bundle.productId,
+              let product = storeKit.product(id: productId) else {
+            purchaseError = "This bundle is not available for purchase yet."
+            showError = true
+            return
+        }
+        isPurchasing = true
+        defer { isPurchasing = false }
+        AnalyticsService.logPurchaseAttempt(productId: productId)
+        do {
+            let success = try await storeKit.purchase(product)
+            if success {
+                AnalyticsService.logPurchaseSuccess(productId: productId)
+                onAction(.buyBundle)
+            }
+        } catch {
+            purchaseError = error.localizedDescription
+            showError = true
+        }
+    }
+
+    private func restorePurchases() async {
+        isRestoring = true
+        defer { isRestoring = false }
+        await storeKit.restorePurchases()
+        onAction(.restore)
+    }
+
     private func logDialogView() {
         switch content {
         case .scene(let scene):
@@ -398,6 +524,8 @@ struct PremiumUnlockDialog: View {
     }
 }
 
+// MARK: - Button label
+
 private struct DialogButtonLabel: View {
     let title: String
     let subtitle: String?
@@ -408,23 +536,23 @@ private struct DialogButtonLabel: View {
     @Environment(\.isFocused) private var isFocused
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
+                .font(.system(size: 26, weight: .semibold))
             Text(title)
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 18, weight: .bold))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
             if let subtitle {
                 Text(subtitle)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 15, weight: .medium))
                     .opacity(0.85)
             }
         }
         .foregroundColor(foregroundColor)
-        .frame(minWidth: 180, minHeight: 88)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .frame(minWidth: 220, minHeight: 108)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 18)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(backgroundColor)
@@ -440,13 +568,15 @@ private struct DialogButtonLabel: View {
 
     private var foregroundColor: Color {
         switch style {
-        case .secondary: return .white.opacity(0.85)
+        case .secondary, .muted: return .white.opacity(style == .muted ? 0.55 : 0.85)
         case .primary, .accent: return .white
         }
     }
 
     private var backgroundColor: Color {
         switch style {
+        case .muted:
+            return Color.white.opacity(isFocused ? 0.12 : 0.05)
         case .secondary:
             return Color.white.opacity(isFocused ? 0.18 : 0.1)
         case .primary:
@@ -459,6 +589,7 @@ private struct DialogButtonLabel: View {
     private var borderColor: Color {
         if isFocused { return theme.accentColor.opacity(0.95) }
         switch style {
+        case .muted: return Color.white.opacity(0.12)
         case .secondary: return Color.white.opacity(0.25)
         case .primary: return theme.premiumBadgeColor.opacity(0.6)
         case .accent: return theme.accentColor.opacity(0.55)
@@ -466,28 +597,22 @@ private struct DialogButtonLabel: View {
     }
 }
 
-private struct RestoreButtonLabel: View {
-    let isRestoring: Bool
+// MARK: - IAPProductCatalog bundle lookup
 
-    @Environment(\.isFocused) private var isFocused
-
-    var body: some View {
-        HStack(spacing: 6) {
-            if isRestoring {
-                ProgressView().tint(.white.opacity(0.6)).scaleEffect(0.8)
-            } else {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 13))
+extension IAPProductCatalog {
+    /// Returns the paid PackDefinition that contains this scene category, if any.
+    static func packContainingSceneCategory(_ sceneCategory: String) -> PackDefinition? {
+        for pack in PackService.allPacks {
+            if pack.isFree || pack.productId == nil { continue }
+            if pack.categories.contains(where: { $0.sceneCategory == sceneCategory }) {
+                return pack
             }
-            Text(isRestoring ? "Restoring…" : "Restore Purchases")
-                .font(.system(size: 14))
         }
-        .foregroundColor(.white.opacity(isFocused ? 0.85 : 0.55))
-        .underline(!isRestoring)
-        .frame(maxWidth: .infinity, minHeight: 44)
-        .tvFocusStyle(isFocused: isFocused)
+        return nil
     }
 }
+
+// MARK: - Helpers
 
 private extension PremiumUnlockContent {
     var isPack: Bool {

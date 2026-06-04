@@ -11,150 +11,152 @@ struct PaywallScreen: View {
     @State private var showError = false
 
     private var theme: AppTheme { settings.currentTheme }
+    private var subscriptionProduct: Product? { storeKit.subscriptionProduct() }
+    private var priceString: String { subscriptionProduct?.displayPrice ?? "$4.99" }
 
-    private var subscriptionProduct: Product? {
-        storeKit.subscriptionProduct()
-    }
-
-    private var priceString: String {
-        subscriptionProduct?.displayPrice ?? "$4.99"
-    }
+    @Namespace private var focusNamespace
 
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(hex: 0x1A0A2E), Color(hex: 0x0A0818), Color(hex: 0x0F0C29)],
+                colors: [Color(hex: 0x0A0515), Color(hex: 0x0D0A25), Color(hex: 0x080615)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
 
-            // Decorative background
-            Circle()
-                .fill(theme.accentColor.opacity(0.08))
-                .frame(width: 600, height: 600)
-                .offset(x: -200, y: -150)
-            Circle()
-                .fill(theme.accentColor.opacity(0.05))
-                .frame(width: 400, height: 400)
-                .offset(x: 300, y: 200)
+            GeometryReader { geo in
+                Circle()
+                    .fill(theme.accentColor.opacity(0.10))
+                    .frame(width: geo.size.width * 0.5)
+                    .offset(x: geo.size.width * 0.55, y: -geo.size.height * 0.15)
+                    .blur(radius: 120)
+                Circle()
+                    .fill(theme.accentColor.opacity(0.06))
+                    .frame(width: geo.size.width * 0.4)
+                    .offset(x: -geo.size.width * 0.05, y: geo.size.height * 0.55)
+                    .blur(radius: 100)
+            }
+            .ignoresSafeArea()
 
+            // Single layout tree so the focus engine can navigate between all buttons.
             VStack(spacing: 0) {
-                // Close button
+                // ── TOP: back button row (its own focus section) ──────────
                 HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.7))
-                            .frame(width: 48, height: 48)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .tvFocusStyle()
+                    FocusableCircleButton(icon: "chevron.left", size: 52) { dismiss() }
                     Spacer()
                 }
-                .padding(.horizontal, TranquilTheme.standardPadding)
-                .padding(.top, 40)
+                .padding(.leading, 60)
+                .padding(.top, 48)
+                .padding(.bottom, 20)
+                .focusSection()
 
-                Spacer()
-
-                VStack(spacing: 40) {
-                    // Logo & title
-                    VStack(spacing: 20) {
+                // ── MAIN: two-column content (its own focus section) ──────
+                HStack(spacing: 0) {
+                    // LEFT — Identity + value prop (non-interactive, no focusable items)
+                    VStack(alignment: .leading, spacing: 0) {
                         ZStack {
                             Circle()
                                 .fill(theme.accentColor.opacity(0.15))
-                                .frame(width: 120, height: 120)
-                            Image(systemName: "star.fill")
-                                .font(.system(size: 56))
-                                .foregroundColor(theme.accentColor)
+                                .frame(width: 140, height: 140)
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: 68))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [theme.accentColor, theme.premiumBadgeColor],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
                         }
+                        .padding(.bottom, 40)
 
                         Text("Unlock Premium")
-                            .font(.system(size: 48, weight: .bold))
+                            .font(.system(size: 68, weight: .black))
                             .foregroundColor(.white)
+                            .lineLimit(2)
+                            .padding(.bottom, 16)
 
-                        Text("Experience unlimited tranquility")
-                            .font(.system(size: 22))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
+                        Text("Experience unlimited tranquility.\nNo limits. No ads. Pure peace.")
+                            .font(.system(size: 30, weight: .light))
+                            .foregroundColor(.white.opacity(0.65))
+                            .lineSpacing(8)
+                            .padding(.bottom, 52)
 
-                    // Feature list
-                    VStack(alignment: .leading, spacing: 16) {
-                        featureRow(icon: "play.circle.fill", text: "Access all \(SceneService.shared.premiumScenes.count)+ premium scenes")
-                        featureRow(icon: "headphones", text: "All audio-only ambient tracks")
-                        featureRow(icon: "nosign", text: "No ads — pure relaxation")
-                        featureRow(icon: "heart.fill", text: "Unlimited favorites")
-                        featureRow(icon: "clock.fill", text: "Advanced sleep timer options")
-                    }
-                    .padding(32)
-                    .background(Color.white.opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-
-                    // Pricing & purchase buttons
-                    VStack(spacing: 16) {
-                        // Monthly subscription
-                        Button {
-                            Task { await purchaseSubscription() }
-                        } label: {
-                            HStack {
-                                if isPurchasing {
-                                    ProgressView().tint(.white)
-                                } else {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Subscribe Monthly")
-                                            .font(.system(size: 22, weight: .bold))
-                                            .foregroundColor(.white)
-                                        Text("\(priceString)/month · Cancel anytime")
-                                            .font(.system(size: 15))
-                                            .foregroundColor(.white.opacity(0.8))
-                                    }
-                                }
-                                Spacer()
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .font(.system(size: 32))
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.horizontal, 32)
-                            .padding(.vertical, 20)
-                            .background(
-                                LinearGradient(
-                                    colors: [theme.accentColor, theme.accentColor.opacity(0.7)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .shadow(color: theme.accentColor.opacity(0.4), radius: 20)
+                        VStack(alignment: .leading, spacing: 24) {
+                            featureRow(icon: "play.circle.fill",       text: "All \(SceneService.shared.premiumScenes.count)+ premium scenes")
+                            featureRow(icon: "headphones",              text: "All ambient audio tracks")
+                            featureRow(icon: "nosign",                  text: "Zero ads — pure relaxation")
+                            featureRow(icon: "heart.fill",              text: "Unlimited favourites")
+                            featureRow(icon: "arrow.clockwise.circle", text: "Cancel anytime")
                         }
-                        .buttonStyle(.plain)
-                        .tvFocusStyle()
+
+                        Spacer()
+
+                        Text("Payment charged to Apple ID. Manage in Apple ID settings.")
+                            .font(.system(size: 20))
+                            .foregroundColor(.white.opacity(0.3))
+                            .padding(.bottom, 40)
+                    }
+                    .padding(.leading, 100)
+                    .padding(.trailing, 60)
+                    .frame(maxWidth: .infinity)
+
+                    Rectangle()
+                        .fill(Color.white.opacity(0.07))
+                        .frame(width: 1)
+                        .padding(.vertical, 40)
+
+                    // RIGHT — Purchase card (two focusable buttons)
+                    VStack(spacing: 40) {
+                        VStack(spacing: 20) {
+                            Text("Monthly Plan")
+                                .font(.system(size: 28, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.55))
+
+                            Text(priceString)
+                                .font(.system(size: 80, weight: .black))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.white, theme.accentColor.opacity(0.85)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+
+                            Text("per month")
+                                .font(.system(size: 26, weight: .medium))
+                                .foregroundColor(.white.opacity(0.45))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 52)
+                        .background(RoundedRectangle(cornerRadius: 32).fill(Color.white.opacity(0.05)))
+                        .overlay(RoundedRectangle(cornerRadius: 32).stroke(theme.accentColor.opacity(0.3), lineWidth: 1.5))
+
+                        // Subscribe — gets default focus on open
+                        TranquilFocusButton(
+                            action: { Task { await purchaseSubscription() } },
+                            prefersDefaultFocus: true,
+                            focusNamespace: focusNamespace
+                        ) { isFocused in
+                            SubscribeButtonLabel(isPurchasing: isPurchasing, priceString: priceString,
+                                                theme: theme, isFocused: isFocused)
+                        }
                         .disabled(isPurchasing)
 
-                        // Restore purchases
-                        Button {
+                        TranquilFocusButton(action: {
                             Task { await restorePurchases() }
-                        } label: {
-                            Text("Restore Purchases")
-                                .font(.system(size: 18))
-                                .foregroundColor(.white.opacity(0.6))
-                                .padding(.vertical, 12)
+                        }) { isFocused in
+                            RestorePurchasesLabel(isFocused: isFocused, theme: theme)
                         }
-                        .buttonStyle(.plain)
-                        .tvFocusStyle()
+                        .disabled(isPurchasing)
                     }
-                    .frame(maxWidth: 600)
+                    .frame(maxWidth: 560)
+                    .padding(.horizontal, 80)
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: 700)
-
-                Spacer()
-
-                Text("Payment charged to Apple ID account. Subscription auto-renews monthly.\nManage or cancel in Apple ID settings.")
-                    .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.4))
-                    .multilineTextAlignment(.center)
-                    .padding(.bottom, 40)
+                .frame(maxHeight: .infinity)
+                .focusSection()
             }
         }
         .alert("Purchase Error", isPresented: $showError) {
@@ -165,26 +167,26 @@ struct PaywallScreen: View {
         .onAppear {
             AnalyticsService.logPaywallView(reason: "paywall_screen")
         }
+        .onExitCommand { dismiss() }
     }
 
     @ViewBuilder
     private func featureRow(icon: String, text: String) -> some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 20) {
             Image(systemName: icon)
-                .font(.system(size: 22))
+                .font(.system(size: 28))
                 .foregroundColor(theme.accentColor)
-                .frame(width: 32)
+                .frame(width: 40)
             Text(text)
-                .font(.system(size: 20))
-                .foregroundColor(.white)
+                .font(.system(size: 26, weight: .medium))
+                .foregroundColor(.white.opacity(0.85))
             Spacer()
         }
     }
 
     private func purchaseSubscription() async {
         guard let product = subscriptionProduct else {
-            // TODO: No product loaded — ensure StoreKit is configured
-            purchaseError = "Product not available. Please check your App Store configuration."
+            purchaseError = "Product not available. Please try again later."
             showError = true
             return
         }
@@ -208,6 +210,74 @@ struct PaywallScreen: View {
         defer { isPurchasing = false }
         await storeKit.restorePurchases()
         if settings.isPremium { dismiss() }
+    }
+}
+
+private struct SubscribeButtonLabel: View {
+    let isPurchasing: Bool
+    let priceString: String
+    let theme: AppTheme
+    let isFocused: Bool
+
+    var body: some View {
+        HStack(spacing: 16) {
+            if isPurchasing {
+                ProgressView().tint(.white).scaleEffect(1.2)
+                Text("Processing…")
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundColor(.white)
+            } else {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundColor(.white)
+                Text("Subscribe — \(priceString)/mo")
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundColor(.white)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .background(
+            LinearGradient(
+                colors: [
+                    theme.accentColor.opacity(isFocused ? 1.0 : 0.9),
+                    theme.premiumBadgeColor.opacity(isFocused ? 1.0 : 0.85)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.white.opacity(isFocused ? 0.6 : 0), lineWidth: 2.5)
+        )
+        .shadow(color: theme.accentColor.opacity(isFocused ? 0.6 : 0.25), radius: isFocused ? 28 : 16)
+        .scaleEffect(isFocused ? 1.03 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: isFocused)
+    }
+}
+
+private struct RestorePurchasesLabel: View {
+    let isFocused: Bool
+    let theme: AppTheme
+
+    var body: some View {
+        Text("Restore Purchases")
+            .font(.system(size: 24, weight: .medium))
+            .foregroundColor(isFocused ? .white : .white.opacity(0.45))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 22)
+            .background(
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(isFocused ? Color.white.opacity(0.10) : Color.white.opacity(0.03))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(isFocused ? theme.accentColor.opacity(0.6) : Color.clear, lineWidth: 2)
+            )
+            .scaleEffect(isFocused ? 1.03 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: isFocused)
     }
 }
 
