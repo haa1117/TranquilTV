@@ -1,7 +1,8 @@
 import Foundation
 import StoreKit
 
-// StoreKit 2 — product IDs from App Store Connect (`IAPProductCatalog`).
+// StoreKit 2 — loads live App Store Connect products via `Product.products(for:)`.
+// Do not attach a StoreKit Configuration file to the Xcode scheme; use a Sandbox Apple ID to test purchases.
 @MainActor
 class StoreKitService: ObservableObject {
     static let shared = StoreKitService()
@@ -28,6 +29,7 @@ class StoreKitService: ObservableObject {
         do {
             products = try await Product.products(for: IAPProductCatalog.allProductIds)
             let loadedIds = Set(products.map(\.id))
+            print("[StoreKit] Loaded \(loadedIds.count) live products from App Store: \(loadedIds.sorted())")
             let missing = IAPProductCatalog.allProductIds.subtracting(loadedIds)
             if !missing.isEmpty {
                 print("[StoreKit] Products not returned by App Store: \(missing.sorted())")
