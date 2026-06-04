@@ -41,7 +41,14 @@ struct SplashScreen: View {
                 withAnimation(.easeIn(duration: 0.8)) {
                     opacity = 1.0
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                Task { @MainActor in
+                    let splashStart = ContinuousClock.now
+                    await AttService.requestPermissionIfNeeded()
+                    let elapsed = splashStart.duration(to: .now)
+                    let remaining = Duration.milliseconds(1500) - elapsed
+                    if remaining > .zero {
+                        try? await Task.sleep(for: remaining)
+                    }
                     withAnimation(.easeOut(duration: 0.5)) {
                         isActive = true
                     }
