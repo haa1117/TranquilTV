@@ -32,6 +32,7 @@
 		AA000050 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000050 /* Color+Hex.swift */; };
 		AA000060 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000060 /* Assets.xcassets */; };
 		AA000061 /* videourls.txt in Resources */ = {isa = PBXBuildFile; fileRef = AB000061 /* videourls.txt */; };
+		AA000062 /* fallback_pexels_3571264.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AB000062 /* fallback_pexels_3571264.mp4 */; };
 		AA000070 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000070 /* StoreKit.framework */; };
 		AA000071 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000071 /* AVKit.framework */; };
 		AA000072 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000072 /* AVFoundation.framework */; };
@@ -41,10 +42,8 @@
 		AA000076 /* PlaybackSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000076 /* PlaybackSettingsPage.swift */; };
 		AA000077 /* AccountSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000077 /* AccountSettingsPage.swift */; };
 		AA000078 /* PackCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000078 /* PackCardView.swift */; };
-		AA000062 /* fallback_pexels_3571264.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AB000062 /* fallback_pexels_3571264.mp4 */; };
 		AA000079 /* AmbientBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000079 /* AmbientBackgroundView.swift */; };
 		AA00007A /* BundlePickerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00007A /* BundlePickerScreen.swift */; };
-		AA00007B /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = AB00007B /* Products.storekit */; };
 		AA00007C /* PlaybackRemoteActivityBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00007C /* PlaybackRemoteActivityBridge.swift */; };
 		AA00007D /* IAPProductCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00007D /* IAPProductCatalog.swift */; };
 		AA00007E /* PremiumUnlockDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00007E /* PremiumUnlockDialog.swift */; };
@@ -54,9 +53,12 @@
 		AA000083 /* thunderstorm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AB000083 /* thunderstorm.mp3 */; };
 		AA000084 /* campfire.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AB000084 /* campfire.mp3 */; };
 		AA000085 /* wind_chimes.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AB000085 /* wind_chimes.mp3 */; };
+		AA000086 /* ScheduledMoodHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000086 /* ScheduledMoodHeroCard.swift */; };
+		AA000087 /* AttService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000087 /* AttService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AAPROD001 /* TranquilTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TranquilTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000001 /* TranquilTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranquilTVApp.swift; sourceTree = "<group>"; };
 		AB000002 /* SplashScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreen.swift; sourceTree = "<group>"; };
 		AB000003 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 		AB000050 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		AB000060 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AB000061 /* videourls.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = videourls.txt; sourceTree = "<group>"; };
+		AB000062 /* fallback_pexels_3571264.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = fallback_pexels_3571264.mp4; sourceTree = "<group>"; };
 		AB000070 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		AB000071 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		AB000072 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -91,10 +94,8 @@
 		AB000076 /* PlaybackSettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackSettingsPage.swift; sourceTree = "<group>"; };
 		AB000077 /* AccountSettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSettingsPage.swift; sourceTree = "<group>"; };
 		AB000078 /* PackCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackCardView.swift; sourceTree = "<group>"; };
-		AB000062 /* fallback_pexels_3571264.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = fallback_pexels_3571264.mp4; sourceTree = "<group>"; };
 		AB000079 /* AmbientBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientBackgroundView.swift; sourceTree = "<group>"; };
 		AB00007A /* BundlePickerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundlePickerScreen.swift; sourceTree = "<group>"; };
-		AB00007B /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		AB00007C /* PlaybackRemoteActivityBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackRemoteActivityBridge.swift; sourceTree = "<group>"; };
 		AB00007D /* IAPProductCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAPProductCatalog.swift; sourceTree = "<group>"; };
 		AB00007E /* PremiumUnlockDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumUnlockDialog.swift; sourceTree = "<group>"; };
@@ -104,7 +105,8 @@
 		AB000083 /* thunderstorm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = thunderstorm.mp3; sourceTree = "<group>"; };
 		AB000084 /* campfire.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = campfire.mp3; sourceTree = "<group>"; };
 		AB000085 /* wind_chimes.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = wind_chimes.mp3; sourceTree = "<group>"; };
-		AAPROD001 /* TranquilTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TranquilTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000086 /* ScheduledMoodHeroCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduledMoodHeroCard.swift; sourceTree = "<group>"; };
+		AB000087 /* AttService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,33 +123,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AAGROOT /* / */ = {
-			isa = PBXGroup;
-			children = (
-				AAGAPP /* TranquilTV */,
-				AAGFW /* Frameworks */,
-				AAGPROD /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		AAGPROD /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				AAPROD001 /* TranquilTV.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		AAGFW /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				AB000070 /* StoreKit.framework */,
-				AB000071 /* AVKit.framework */,
-				AB000072 /* AVFoundation.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		AAGAPP /* TranquilTV */ = {
 			isa = PBXGroup;
 			children = (
@@ -173,6 +148,91 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		AAGAUDIO /* audio */ = {
+			isa = PBXGroup;
+			children = (
+				AB000080 /* rain_forest.mp3 */,
+				AB000081 /* ocean.mp3 */,
+				AB000082 /* city_rain.mp3 */,
+				AB000083 /* thunderstorm.mp3 */,
+				AB000084 /* campfire.mp3 */,
+				AB000085 /* wind_chimes.mp3 */,
+			);
+			path = audio;
+			sourceTree = "<group>";
+		};
+		AAGCOMPONENTS /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AB000041 /* SceneCardView.swift */,
+				AB000042 /* FocusableButton.swift */,
+				AB000043 /* AppHeaderView.swift */,
+				AB000078 /* PackCardView.swift */,
+				AB000079 /* AmbientBackgroundView.swift */,
+				AB00007C /* PlaybackRemoteActivityBridge.swift */,
+				AB00007E /* PremiumUnlockDialog.swift */,
+				AB000086 /* ScheduledMoodHeroCard.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		AAGEXTENSIONS /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				AB000050 /* Color+Hex.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		AAGFW /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AB000070 /* StoreKit.framework */,
+				AB000071 /* AVKit.framework */,
+				AB000072 /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AAGMODELS /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AB000010 /* Scene.swift */,
+				AB000011 /* AudioOnlyItem.swift */,
+				AB000012 /* AppTheme.swift */,
+				AB000073 /* PackDefinition.swift */,
+				AB00007D /* IAPProductCatalog.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AAGPROD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AAPROD001 /* TranquilTV.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AAGRESOURCES /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AB000061 /* videourls.txt */,
+				AB000062 /* fallback_pexels_3571264.mp4 */,
+				AAGAUDIO /* audio */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AAGROOT = {
+			isa = PBXGroup;
+			children = (
+				AAGAPP /* TranquilTV */,
+				AAGFW /* Frameworks */,
+				AAGPROD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
 		AAGSCREENS /* Screens */ = {
 			isa = PBXGroup;
 			children = (
@@ -189,18 +249,6 @@
 			path = Screens;
 			sourceTree = "<group>";
 		};
-		AAGMODELS /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				AB000010 /* Scene.swift */,
-				AB000011 /* AudioOnlyItem.swift */,
-				AB000012 /* AppTheme.swift */,
-				AB000073 /* PackDefinition.swift */,
-				AB00007D /* IAPProductCatalog.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 		AAGSERVICES /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -211,32 +259,10 @@
 				AB000024 /* VideoPlaylistService.swift */,
 				AB000025 /* StoreKitService.swift */,
 				AB000026 /* AnalyticsService.swift */,
+				AB000087 /* AttService.swift */,
 				AB000074 /* ScheduledMoodsService.swift */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		AAGVIEWMODELS /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				AB000030 /* HomeViewModel.swift */,
-				AB000031 /* PlaybackViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		AAGCOMPONENTS /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				AB000041 /* SceneCardView.swift */,
-				AB000042 /* FocusableButton.swift */,
-				AB000043 /* AppHeaderView.swift */,
-				AB000078 /* PackCardView.swift */,
-				AB000079 /* AmbientBackgroundView.swift */,
-				AB00007C /* PlaybackRemoteActivityBridge.swift */,
-				AB00007E /* PremiumUnlockDialog.swift */,
-			);
-			path = Components;
 			sourceTree = "<group>";
 		};
 		AAGTHEME /* Theme */ = {
@@ -247,36 +273,13 @@
 			path = Theme;
 			sourceTree = "<group>";
 		};
-		AAGEXTENSIONS /* Extensions */ = {
+		AAGVIEWMODELS /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				AB000050 /* Color+Hex.swift */,
+				AB000030 /* HomeViewModel.swift */,
+				AB000031 /* PlaybackViewModel.swift */,
 			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
-		AAGRESOURCES /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				AB000061 /* videourls.txt */,
-				AB000062 /* fallback_pexels_3571264.mp4 */,
-				AB00007B /* Products.storekit */,
-				AAGAUDIO /* audio */,
-			);
-			path = Resources;
-			sourceTree = "<group>";
-		};
-		AAGAUDIO /* audio */ = {
-			isa = PBXGroup;
-			children = (
-				AB000080 /* rain_forest.mp3 */,
-				AB000081 /* ocean.mp3 */,
-				AB000082 /* city_rain.mp3 */,
-				AB000083 /* thunderstorm.mp3 */,
-				AB000084 /* campfire.mp3 */,
-				AB000085 /* wind_chimes.mp3 */,
-			);
-			path = audio;
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -340,7 +343,6 @@
 				AA000060 /* Assets.xcassets in Resources */,
 				AA000061 /* videourls.txt in Resources */,
 				AA000062 /* fallback_pexels_3571264.mp4 in Resources */,
-				AA00007B /* Products.storekit in Resources */,
 				AA000080 /* rain_forest.mp3 in Resources */,
 				AA000081 /* ocean.mp3 in Resources */,
 				AA000082 /* city_rain.mp3 in Resources */,
@@ -373,6 +375,7 @@
 				AA000024 /* VideoPlaylistService.swift in Sources */,
 				AA000025 /* StoreKitService.swift in Sources */,
 				AA000026 /* AnalyticsService.swift in Sources */,
+				AA000087 /* AttService.swift in Sources */,
 				AA000030 /* HomeViewModel.swift in Sources */,
 				AA000031 /* PlaybackViewModel.swift in Sources */,
 				AA000040 /* TranquilTheme.swift in Sources */,
@@ -391,6 +394,7 @@
 				AA00007C /* PlaybackRemoteActivityBridge.swift in Sources */,
 				AA00007D /* IAPProductCatalog.swift in Sources */,
 				AA00007E /* PremiumUnlockDialog.swift in Sources */,
+				AA000086 /* ScheduledMoodHeroCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -519,10 +523,10 @@
 		AAXCBC010 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 205;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = FCNAGNKUJV;
 				ENABLE_PREVIEWS = YES;
@@ -532,8 +536,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = co.futurewatch.TranquilTV;
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.futurewatch.tranquil;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -547,11 +551,12 @@
 		AAXCBC011 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 205;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = FCNAGNKUJV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TranquilTV/App/Info.plist;
@@ -559,8 +564,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = co.futurewatch.TranquilTV;
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.futurewatch.tranquil;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
