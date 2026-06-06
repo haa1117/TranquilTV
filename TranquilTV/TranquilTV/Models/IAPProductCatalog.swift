@@ -47,6 +47,10 @@ enum IAPProductCatalog {
         productId.hasPrefix("pack_")
     }
 
+    static func fallbackPrice(for productId: String) -> String {
+        fallbackPrices[productId] ?? "$1.99"
+    }
+
     // MARK: - Private maps
 
     private static let displayNames: [String: String] = [
@@ -81,5 +85,24 @@ enum IAPProductCatalog {
         "Wind Chimes": "audio_wind_chimes",
         "Distant Thunder": "distant_thunder",
         "Crackling Campfire": "crackling_campfire",
+    ]
+
+    /// Hardcoded fallback prices shown only when StoreKit hasn't loaded live products yet.
+    private static let fallbackPrices: [String: String] = [
+        "scene_first_snow": "$1.99",
+        "scene_autumn_leaves": "$1.99",
+        "focus_flow": "$1.99",
+        "grounding_stability": "$1.99",
+        "anxiety_relief": "$1.99",
+        "japanese_forrest": "$1.99",
+        "mountains_calm": "$1.99",
+        "audio_wind_chimes": "$1.99",
+        "distant_thunder": "$1.99",
+        "crackling_campfire": "$1.99",
+        "pack_sleep_mode": "$3.98",
+        "pack_study": "$3.98",
+        "pack_calm_grounded": "$3.98",
+        "pack_nature_escapes": "$3.98",
+        subscriptionProductId: "$4.99",
     ]
 }
