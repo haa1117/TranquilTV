@@ -1,13 +1,15 @@
 {
   "images" : [
     {
-      "filename" : "Back-1x.png",
+      "filename" : "app_logo.png",
       "idiom" : "tv",
-      "scale" : "1x"
+      "role" : "primary",
+      "size" : "400x240"
     },
     {
       "idiom" : "tv",
-      "scale" : "2x"
+      "role" : "primary",
+      "size" : "1280x768"
     }
   ],
   "info" : {
