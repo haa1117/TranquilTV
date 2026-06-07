@@ -112,15 +112,19 @@ struct PremiumUnlockDialog: View {
     }
 
     private var subscriptionPrice: String {
-        storeKit.subscriptionProduct()?.displayPrice ?? "$4.99"
+        storeKit.subscriptionProduct()?.displayPrice ?? IAPProductCatalog.fallbackPrice(for: IAPProductCatalog.subscriptionProductId)
     }
 
     private var categoryPrice: String {
-        guard let pid = oneTimeProductId, let product = storeKit.product(id: pid) else {
-            if case .pack(let pack) = content { return pack.priceString }
-            return "$1.99"
+        if let pid = oneTimeProductId, let product = storeKit.product(id: pid) {
+            return product.displayPrice
         }
-        return product.displayPrice
+        if case .pack(let pack) = content { return pack.priceString }
+        // Fallback: look up the individual scene/audio product price from the catalog
+        if let pid = oneTimeProductId {
+            return IAPProductCatalog.fallbackPrice(for: pid)
+        }
+        return ""
     }
 
     private var bundlePrice: String {

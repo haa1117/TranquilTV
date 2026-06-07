@@ -26,12 +26,20 @@ private struct PackCardLabel: View {
 
     @Environment(\.isFocused) private var isFocused
     @ObservedObject private var settings = SettingsService.shared
+    @ObservedObject private var storeKit = StoreKitService.shared
     private var theme: AppTheme { settings.currentTheme }
 
     private var previewAssets: [String] { pack.previewImageAssets }
 
     private var captionText: String {
         pack.categories.map(\.name).joined(separator: " · ")
+    }
+
+    private var livePriceString: String {
+        if let pid = pack.productId, let product = storeKit.product(id: pid) {
+            return product.displayPrice
+        }
+        return pack.priceString
     }
 
     var body: some View {
@@ -62,7 +70,7 @@ private struct PackCardLabel: View {
                             .background(Color.green.opacity(0.85))
                             .clipShape(Capsule())
                         } else if !pack.isFree {
-                            Text(pack.priceString)
+                            Text(livePriceString)
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)

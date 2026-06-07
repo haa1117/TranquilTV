@@ -12,7 +12,7 @@ struct PaywallScreen: View {
 
     private var theme: AppTheme { settings.currentTheme }
     private var subscriptionProduct: Product? { storeKit.subscriptionProduct() }
-    private var priceString: String { subscriptionProduct?.displayPrice ?? "$4.99" }
+    private var priceString: String { subscriptionProduct?.displayPrice ?? IAPProductCatalog.fallbackPrice(for: IAPProductCatalog.subscriptionProductId) }
 
     @Namespace private var focusNamespace
 
