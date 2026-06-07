@@ -162,10 +162,9 @@ class SettingsService: ObservableObject {
         if scene.isFree { return true }
         if isPremium { return true }
         if scene.isPurchased { return true }
-        if let pid = oneTimeProductForSceneCategory(scene.category) {
-            return purchasedProductIds.contains(pid)
-        }
         if isPackCategoryUnlocked(scene.category) { return true }
+        if let pid = oneTimeProductForSceneCategory(scene.category),
+           purchasedProductIds.contains(pid) { return true }
         return false
     }
 
