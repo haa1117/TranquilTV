@@ -11,7 +11,7 @@ struct PlaybackScreen: View {
     @State private var activeContent: PlaybackContent
 
     @StateObject private var viewModel = PlaybackViewModel()
-    @StateObject private var categoryPlayer = CategoryVideoPlayer()
+    @StateObject private var categoryPlayer: CategoryVideoPlayer
     @ObservedObject private var settings = SettingsService.shared
     @Environment(\.dismiss) private var dismiss
     @State private var isSleepTransitionActive = false
@@ -19,6 +19,8 @@ struct PlaybackScreen: View {
 
     init(content: PlaybackContent) {
         _activeContent = State(initialValue: content)
+        // Create eagerly so the fallback video starts buffering before the first render.
+        _categoryPlayer = StateObject(wrappedValue: CategoryVideoPlayer())
     }
 
     private var theme: AppTheme { settings.currentTheme }
@@ -52,9 +54,7 @@ struct PlaybackScreen: View {
                         .ignoresSafeArea()
                 }
 
-                if case .scene = activeContent {
-                    Color.black.opacity(0.3).ignoresSafeArea()
-                }
+                if case .scene = activeContent { Color.black.opacity(0.3).ignoresSafeArea() }
 
                 if settings.audioOnlyMode, case .audioOnly = activeContent {
                     Color.black.opacity(0.88).ignoresSafeArea()
@@ -197,11 +197,10 @@ struct PlaybackScreen: View {
     }
 
     private func setupPlayback(for content: PlaybackContent) {
-        viewModel.sceneVideoPlayer = categoryPlayer.player
+        viewModel.sceneVideoPlayer = categoryPlayer.activePlayer
         viewModel.loadContent(content)
         switch content {
         case .scene(let scene):
-            categoryPlayer.startFallbackImmediately()
             let ids = VideoPlaylistService.shared.videoIds(forCategory: scene.category)
             categoryPlayer.start(videoIds: ids, category: scene.category)
             viewModel.applyDefaultSleepTimerIfNeeded()
@@ -217,9 +216,8 @@ struct PlaybackScreen: View {
         settings.lastPlayedSceneId = scene.id
         activeContent = .scene(scene)
         categoryPlayer.stop()
-        viewModel.sceneVideoPlayer = categoryPlayer.player
+        viewModel.sceneVideoPlayer = categoryPlayer.activePlayer
         viewModel.loadScene(scene)
-        categoryPlayer.startFallbackImmediately()
         let ids = VideoPlaylistService.shared.videoIds(forCategory: scene.category)
         categoryPlayer.start(videoIds: ids, category: scene.category)
     }
@@ -275,159 +273,272 @@ struct PlaybackScreen: View {
 
 // MARK: - Category Video Player
 
+/// Plays a shuffled playlist of Pexels videos for a category.
+/// - Immediately starts the bundled fallback video so there is never a black frame.
+/// - Fetches real video URLs in the background; crossfades to each one when ready.
+/// - Prefetches the next URL while the current video is playing.
 @MainActor
 class CategoryVideoPlayer: ObservableObject {
-    @Published var player: AVQueuePlayer = {
-        let player = AVQueuePlayer()
-        // Prevent tvOS from surfacing system transport / scrubbing UI for ambient video.
-        player.allowsExternalPlayback = false
-        player.preventsDisplaySleepDuringVideoPlayback = true
-        return player
-    }()
+
+    // Two players — we crossfade between them (A → B → A → …).
+    let playerA: AVPlayer
+    let playerB: AVPlayer
+    // Which player is currently visible (opacity 1).
+    @Published var activeIsA: Bool = true
     @Published var isDownloading = false
-    private var looper: AVPlayerLooper?
+
+    /// Pre-built UIKit view — handed directly to SwiftUI so the layers are
+    /// wired to the players before the first render frame.
+    let containerView: DualPlayerContainerView
+
+    private var looper: AVPlayerLooper?           // fallback loop on the active player
     private var videoIds: [Int] = []
-    private var category: String = ""
     private var currentIndex = 0
+    private var nextUrl: URL? = nil               // prefetched URL for the upcoming video
+    private var prefetchTask: Task<Void, Never>?
     private var endObserver: NSObjectProtocol?
 
+    // The player that is currently showing.
+    var activePlayer: AVPlayer { activeIsA ? playerA : playerB }
+    // The player waiting off-screen.
+    var inactivePlayer: AVPlayer { activeIsA ? playerB : playerA }
+
+    init() {
+        playerA = AVPlayer()
+        playerB = AVPlayer()
+        for p in [playerA, playerB] {
+            p.allowsExternalPlayback = false
+            p.preventsDisplaySleepDuringVideoPlayback = true
+            p.volume = 0
+        }
+        // Build the container now — layers are wired before SwiftUI renders.
+        containerView = DualPlayerContainerView(playerA: playerA, playerB: playerB)
+        startFallbackOnActive()
+    }
+
+    // MARK: - Public API
+
     func startFallbackImmediately() {
-        guard looper == nil, player.items().isEmpty else { return }
-        startFallback()
+        // Already running — no-op.
+        guard looper == nil else { return }
+        startFallbackOnActive()
     }
 
     func start(videoIds: [Int], category: String) {
-        guard !videoIds.isEmpty else {
-            startFallback()
-            return
-        }
+        guard !videoIds.isEmpty else { return }
         self.videoIds = videoIds.shuffled()
-        self.category = category
         currentIndex = 0
-        loadCurrentVideo()
+        nextUrl = nil
+        prefetchTask?.cancel()
+        // Fallback already playing; fetch first real video in background.
+        fetchAndPlay(index: currentIndex)
     }
 
-    private func loadCurrentVideo() {
-        guard currentIndex < videoIds.count else { return }
-        let id = videoIds[currentIndex]
+    func stop() {
+        prefetchTask?.cancel()
+        prefetchTask = nil
+        removeEndObserver()
+        looper = nil
+        for p in [playerA, playerB] {
+            p.pause()
+            p.replaceCurrentItem(with: nil)
+        }
+    }
+
+    // MARK: - Fallback
+
+    private func startFallbackOnActive() {
+        guard let url = Bundle.main.url(forResource: "fallback_pexels_3571264", withExtension: "mp4") else { return }
+        looper = nil
+        // Use playerA as the queue player target for AVPlayerLooper.
+        // AVPlayerLooper requires AVQueuePlayer; we use a separate looper player just for fallback.
+        let item = AVPlayerItem(url: url)
+        // Directly loop by observing end on the active player.
+        activePlayer.replaceCurrentItem(with: item)
+        activePlayer.play()
+        observeFallbackLoop()
+    }
+
+    private var fallbackLoopObserver: NSObjectProtocol?
+
+    private func observeFallbackLoop() {
+        fallbackLoopObserver.map { NotificationCenter.default.removeObserver($0) }
+        fallbackLoopObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: activePlayer.currentItem,
+            queue: .main
+        ) { [weak self] _ in
+            self?.activePlayer.seek(to: .zero)
+            self?.activePlayer.play()
+        }
+    }
+
+    // MARK: - Fetch & Play
+
+    private func fetchAndPlay(index: Int) {
+        guard index < videoIds.count else { return }
+        let id = videoIds[index]
         isDownloading = true
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
                 let urls = try await PexelsVideoService.shared.videoURLs(forId: id)
-                if let url = urls.first {
+                guard let url = urls.first else {
                     await MainActor.run {
                         self.isDownloading = false
-                        self.looper = nil
-                        let item = AVPlayerItem(url: url)
-                        self.player.removeAllItems()
-                        self.player.insert(item, after: nil)
-                        self.player.volume = 0.0
-                        self.player.play()
-                        self.installEndObserver(for: item)
-                        self.prefetchNext()
+                        self.advance()
                     }
-                } else {
-                    await MainActor.run { self.isDownloading = false }
-                    startFallback()
+                    return
+                }
+                await MainActor.run {
+                    self.isDownloading = false
+                    self.crossfadeToURL(url)
+                    self.prefetchNext()
                 }
             } catch {
-                await MainActor.run { self.isDownloading = false }
-                startFallback()
+                await MainActor.run {
+                    self.isDownloading = false
+                    self.advance()
+                }
             }
         }
     }
 
-    private func installEndObserver(for item: AVPlayerItem) {
-        if let endObserver {
-            NotificationCenter.default.removeObserver(endObserver)
+    private func crossfadeToURL(_ url: URL) {
+        fallbackLoopObserver.map { NotificationCenter.default.removeObserver($0) }
+        fallbackLoopObserver = nil
+        looper = nil
+        removeEndObserver()
+
+        let item = AVPlayerItem(url: url)
+        inactivePlayer.replaceCurrentItem(with: item)
+        inactivePlayer.seek(to: .zero)
+        inactivePlayer.play()
+
+        // Swap active side — CategoryVideoPlayerView animates the opacity change.
+        activeIsA.toggle()
+
+        // Stop the old player after crossfade completes.
+        let old = inactivePlayer  // captured before the toggle above already swapped it
+        Task {
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            await MainActor.run { old.replaceCurrentItem(with: nil) }
         }
+
+        installEndObserver(for: item)
+    }
+
+    private func advance() {
+        currentIndex = (currentIndex + 1) % max(videoIds.count, 1)
+        if let url = nextUrl {
+            nextUrl = nil
+            crossfadeToURL(url)
+            prefetchNext()
+        } else {
+            fetchAndPlay(index: currentIndex)
+        }
+    }
+
+    // MARK: - End observer
+
+    private func installEndObserver(for item: AVPlayerItem) {
+        removeEndObserver()
         endObserver = NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
             object: item,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.currentIndex = (self.currentIndex + 1) % max(self.videoIds.count, 1)
-                self.loadCurrentVideo()
-            }
+            Task { @MainActor in self?.advance() }
         }
     }
+
+    private func removeEndObserver() {
+        if let o = endObserver { NotificationCenter.default.removeObserver(o); endObserver = nil }
+    }
+
+    // MARK: - Prefetch
 
     private func prefetchNext() {
         guard videoIds.count > 1 else { return }
-        let nextIdx = (currentIndex + 1) % videoIds.count
-        let nextId = videoIds[nextIdx]
-        Task {
+        prefetchTask?.cancel()
+        let nextIndex = (currentIndex + 1) % videoIds.count
+        let nextId = videoIds[nextIndex]
+        prefetchTask = Task { [weak self] in
+            guard let self else { return }
             if let urls = try? await PexelsVideoService.shared.videoURLs(forId: nextId),
                let url = urls.first {
-                await MainActor.run {
-                    let item = AVPlayerItem(url: url)
-                    self.player.insert(item, after: nil)
-                }
+                await MainActor.run { self.nextUrl = url }
             }
         }
     }
-
-    func startFallback() {
-        guard let url = Bundle.main.url(forResource: "fallback_pexels_3571264", withExtension: "mp4") else { return }
-        looper = nil
-        player.removeAllItems()
-        let item = AVPlayerItem(url: url)
-        looper = AVPlayerLooper(player: player, templateItem: item)
-        player.volume = 0
-        player.play()
-    }
-
-    func stop() {
-        if let endObserver {
-            NotificationCenter.default.removeObserver(endObserver)
-            self.endObserver = nil
-        }
-        player.pause()
-        player.removeAllItems()
-        looper = nil
-    }
 }
+
+// MARK: - Category Video Player View
 
 struct CategoryVideoPlayerView: View {
     @ObservedObject var player: CategoryVideoPlayer
 
     var body: some View {
-        // Bare AVPlayerLayer — NO system transport controls. SwiftUI's `VideoPlayer`
-        // renders tvOS native scrubbing UI on scene categories; audio categories have
-        // no video surface, so match that experience here with a plain layer.
-        PlayerLayerView(player: player.player)
+        DualPlayerLayerView(container: player.containerView, activeIsA: player.activeIsA)
             .allowsHitTesting(false)
-            .focusable(false)
-            .disabled(true)
     }
 }
 
-/// UIKit-backed view that displays an AVPlayer via AVPlayerLayer with no controls.
-struct PlayerLayerView: UIViewRepresentable {
-    let player: AVQueuePlayer
+/// Wraps the pre-built DualPlayerContainerView so SwiftUI never recreates it.
+struct DualPlayerLayerView: UIViewRepresentable {
+    let container: DualPlayerContainerView
+    let activeIsA: Bool
 
-    func makeUIView(context: Context) -> PlayerContainerView {
-        let view = PlayerContainerView()
-        view.playerLayer.player = player
-        view.playerLayer.videoGravity = .resizeAspectFill
-        view.backgroundColor = .black
-        return view
-    }
+    func makeUIView(context: Context) -> DualPlayerContainerView { container }
 
-    func updateUIView(_ uiView: PlayerContainerView, context: Context) {
-        if uiView.playerLayer.player !== player {
-            uiView.playerLayer.player = player
-        }
+    func updateUIView(_ uiView: DualPlayerContainerView, context: Context) {
+        uiView.crossfade(activeIsA: activeIsA)
     }
 }
 
-final class PlayerContainerView: UIView {
-    override static var layerClass: AnyClass { AVPlayerLayer.self }
-    var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
+final class DualPlayerContainerView: UIView {
+    private let layerA = AVPlayerLayer()
+    private let layerB = AVPlayerLayer()
+    private var currentActiveIsA: Bool = true
 
     override var canBecomeFocused: Bool { false }
+
+    init(playerA: AVPlayer, playerB: AVPlayer) {
+        super.init(frame: .zero)
+        layerA.player = playerA
+        layerB.player = playerB
+        for l in [layerA, layerB] {
+            l.videoGravity = .resizeAspectFill
+            layer.addSublayer(l)
+        }
+        layerA.opacity = 1
+        layerB.opacity = 0
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        layerA.frame = bounds
+        layerB.frame = bounds
+    }
+
+    func crossfade(activeIsA: Bool) {
+        guard activeIsA != currentActiveIsA else { return }
+        currentActiveIsA = activeIsA
+        let incoming: AVPlayerLayer = activeIsA ? layerA : layerB
+        let outgoing: AVPlayerLayer = activeIsA ? layerB : layerA
+        let anim = CABasicAnimation(keyPath: "opacity")
+        anim.duration = 1.2
+        anim.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        incoming.opacity = 1
+        outgoing.opacity = 0
+        incoming.add(anim, forKey: "fadeIn")
+        outgoing.add({ let a = CABasicAnimation(keyPath: "opacity"); a.duration = 1.2; a.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut); return a }(), forKey: "fadeOut")
+        CATransaction.commit()
+    }
 }
 
 // MARK: - Audio Only Background

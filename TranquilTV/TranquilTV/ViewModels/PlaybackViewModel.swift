@@ -19,8 +19,8 @@ class PlaybackViewModel: ObservableObject {
     @Published var isMuted = false
     @Published var volume: Double = 0.8
 
-    /// Category video player (muted); set from PlaybackScreen for scene mode.
-    weak var sceneVideoPlayer: AVQueuePlayer?
+    /// Active category video player (muted); updated whenever the active player changes.
+    weak var sceneVideoPlayer: AVPlayer?
 
     var audioPlayer: AVPlayer?
     private var audioLoopObserver: NSObjectProtocol?
